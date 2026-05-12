@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 
 function SocialButton({ children }) {
   return (
-    // เดิมจะเขียนเป็น <button className="...">...</button>
-    // ตอนนี้เปลี่ยนมาใช้ shadcn <Button /> แล้วค่อย override className เพิ่ม
+    // SocialButton คือ "ปุ่มแม่แบบ" สำหรับปุ่มสมัคร/เข้าสู่ระบบด้วย social account
+    // เช่น Google หรือ Apple เพื่อให้เราไม่ต้องเขียน class ซ้ำทุกครั้ง
+    // ใช้ shadcn <Button /> แล้วค่อย override className เพิ่ม
     <Button
       type="button"
       variant="outline"
       className="min-w-[118px] rounded-full border-[#ead7ce] bg-white px-5 py-3 text-sm text-[#231815] shadow-[0_1px_0_rgba(0,0,0,0.04)] hover:bg-[#fffaf7]"
     >
+      {/* children คือข้อมูลที่ถูกส่งมาแสดงด้านในปุ่ม เช่น icon G และคำว่า Google */}
       {children}
     </Button>
   );
@@ -22,7 +24,6 @@ function FormField({ label, type = "text", placeholder }) {
   return (
     <label className="block">
       <span className="mb-2 block text-[18px] text-[#231815]">{label}</span>
-      {/* เดิมจะเป็น <input type={type} className="..." /> */}
       {/* ตอนนี้ใช้ shadcn <Input /> เพื่อได้ style base + focus state มาตรฐาน แล้วค่อยปรับ class เพิ่ม */}
       <Input
         type={type}
@@ -124,6 +125,7 @@ export default function Register() {
                   </div>
 
                   <div className="flex flex-wrap items-center justify-center gap-4">
+                    {/* เรียกใช้ SocialButton เพื่อแสดงปุ่มสมัครด้วย Google ในหน้า Register */}
                     <SocialButton>
                       <span>G</span>
                       <span>Google</span>
