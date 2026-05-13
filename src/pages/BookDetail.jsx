@@ -1,193 +1,403 @@
 import { useState } from "react";
-import { Heart, Star } from "lucide-react";
+import { Rating } from "@mui/material";
 import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
-import ReviewSection from "../components/BookDetailComponents/ReviewSection";
-import WriteReviewForm from "../components/BookDetailComponents/WriteReviewForm";
-import { useCart } from "../context/CartContext";
+import { bookData } from "../mock-data/bookData";
+import { reviewData } from "../mock-data/reviewData";
 
-export default function BookDetail() {
-  const [isWritingReview, setIsWritingReview] = useState(false);
-  const { addToCart } = useCart();
+const currentUser = { name: "You" };
 
-  const book = {
-    id: 19,
-    name: "The Night We Met",
-    author: "Abby Jimenez",
-    rating: 4.7,
-    totalRatings: 2814,
-    description:
-      "A heartwarming and hilarious love story about two people who meet in the most unexpected of places. When Alexis meets Daniel while waiting for a ferry, she never imagines the night will change her life forever.",
-    price: 434.15,
-    originalPrice: 542.0,
-    discount: 20,
-    pages: 320,
-    language: "English",
-    publisher: "Forever",
-    format: "Paperback",
-    categories: ["Romance", "Contemporary"],
-    img: "https://m.media-amazon.com/images/I/81mXpS+X6vL.jpg",
-  };
+function HeartIcon({ filled }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill={filled ? "#A66858" : "none"}
+      stroke={filled ? "#A66858" : "currentColor"}
+      strokeWidth="2"
+    >
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
 
-  const reviews = [
-    {
-      id: 1,
-      customerName: "Sarah K.",
-      avatar: "S",
-      verified: true,
-      date: "12 Apr 2026",
-      rating: 5,
-      review:
-        "Absolutely loved this book! The chemistry between the characters was amazing and I couldn't put it down. Abby Jimenez never disappoints and this might be her best yet.",
-    },
-    {
-      id: 2,
-      customerName: "Mike L.",
-      avatar: "M",
-      verified: true,
-      date: "5 Apr 2026",
-      rating: 4,
-      review:
-        "Great read for a rainy day. The humor is spot on and the emotional moments hit hard. Only knocked one star because the ending felt a little rushed.",
-    },
-  ];
+function Avatar({ name }) {
+  return (
+    <div
+      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold"
+      style={{ backgroundColor: "#EEE1DB", color: "#A66858" }}
+    >
+      {name.charAt(0)}
+    </div>
+  );
+}
+
+function WriteReviewForm({ onSubmit }) {
+  const [rating, setRating] = useState(0);
+  const [text, setText] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (rating === 0) {
+      setError("Please select a star rating.");
+      return;
+    }
+    if (text.trim().length < 5) {
+      setError("Please write at least a short review.");
+      return;
+    }
+    setError("");
+    onSubmit({ rating, text: text.trim() });
+    setSubmitted(true);
+    setRating(0);
+    setText("");
+    setTimeout(() => setSubmitted(false), 3000);
+  }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
+    <div className="bg-white rounded-2xl px-6 py-6 shadow-sm">
+      <h3
+        className="text-base font-bold text-center mb-4 font-['Playfair_Display']"
+        style={{ color: "#2c1810" }}
+      >
+        Write a Review
+      </h3>
+      {submitted ? (
+        <div className="text-center py-4" style={{ color: "#5c8a5c" }}>
+          <p className="font-semibold">Thank you for your review!</p>
+          <p className="text-sm mt-1 opacity-75">
+            Your review has been posted.
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex justify-center">
+            <Rating
+              value={rating}
+              onChange={(event, newValue) => setRating(newValue)}
+              precision={0.5}
+              size="large"
+              sx={{
+                "& .MuiRating-iconFilled": {
+                  color: "#FFC107",
+                },
+                "& .MuiRating-iconHover": {
+                  color: "#FFC107",
+                },
+              }}
+            />
+          </div>
+          <textarea
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              setError("");
+            }}
+            placeholder="Write your review here..."
+            rows={4}
+            className="w-full px-4 py-3 text-sm rounded-xl border resize-none outline-none transition-colors"
+            style={{
+              borderColor: "#d4c4b4",
+              color: "#2c1810",
+              backgroundColor: "#faf7f4",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "#A66858")}
+            onBlur={(e) => (e.target.style.borderColor = "#d4c4b4")}
+          />
+          {error && (
+            <p className="text-xs text-center" style={{ color: "#c0392b" }}>
+              {error}
+            </p>
+          )}
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              className="px-10 py-2.5 rounded-full text-white text-sm font-semibold transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#A66858" }}
+            >
+              Submit Review
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+function formatDate(date) {
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export default function BookDetail() {
+  // const { id } = useParams();
+  const [liked, setLiked] = useState(false);
+  const [cartAdded, setCartAdded] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // ดึงข้อมูลหนังสือจาก mock-data (ใช้หนังสือเล่มแรกสำหรับทดสอบ)
+  const book = bookData[0]; // Atomic Habits
+
+  // ดึง reviews ของหนังสือเล่มนี้
+  const initialReviews = reviewData
+    .filter((r) => r.book_id === book.id)
+    .map((r) => ({
+      id: r.id,
+      name: r.customer_name,
+      date: formatDate(r.created_at),
+      rating: r.rating,
+      text: r.review,
+    }));
+
+  const [reviews, setReviews] = useState(initialReviews);
+
+  function handleAddToCart() {
+    setCartAdded(true);
+    setTimeout(() => setCartAdded(false), 2000);
+  }
+
+  function handleSubmitReview({ rating, text }) {
+    const newReview = {
+      id: Date.now(),
+      name: currentUser.name,
+      date: formatDate(new Date()),
+      rating,
+      text,
+    };
+    setReviews((prev) => [newReview, ...prev]);
+  }
+
+  // สร้าง description ถ้าไม่มี
+  const description =
+    book.description ||
+    `Discover "${book.name}" by ${book.author}, a captivating ${book.category} book published by ${book.publisher}. This ${book.pages}-page masterpiece in ${book.language} offers readers an unforgettable journey through its compelling narrative and insightful perspectives.`;
+
+  return (
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ backgroundColor: "#FAF4F1" }}
+    >
       <NavBar />
-
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <nav className="mb-6 text-sm text-gray-600">
-          <span className="cursor-pointer hover:text-[#A66858]">Home</span>
-          <span className="mx-2">/</span>
-          <span className="cursor-pointer hover:text-[#A66858]">Romance</span>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900">{book.name}</span>
-        </nav>
-
-        <div className="mb-6 rounded-lg bg-white p-6 shadow-sm md:p-8">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            <div className="flex flex-col items-center md:items-start">
-              <div className="mb-4 aspect-[2/3] w-full max-w-[280px] overflow-hidden rounded-lg shadow-lg">
-                <img
-                  src={book.img}
-                  alt={book.name}
-                  className="h-full w-full object-cover"
-                />
+      <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-8 space-y-5">
+        {/* Book card */}
+        <div className="bg-white rounded-2xl p-7 shadow-sm">
+          <div className="flex gap-8">
+            {/* Cover */}
+            <div className="flex flex-col items-center gap-4 flex-shrink-0">
+              <div className="w-48 h-64 rounded-lg overflow-hidden shadow-md">
+                {book.img ? (
+                  <img
+                    src={book.img}
+                    alt={book.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{ backgroundColor: "#1e3a8a" }}
+                  >
+                    <span className="text-white text-center font-bold text-base px-4 leading-snug">
+                      {book.name}
+                    </span>
+                  </div>
+                )}
               </div>
-              <button className="flex items-center gap-2 rounded-full border-2 border-gray-300 px-6 py-2 text-gray-700 transition-colors hover:border-[#A66858] hover:text-[#A66858]">
-                <Heart size={20} />
-                <span>Like</span>
+              <button
+                onClick={() => setLiked((l) => !l)}
+                className="flex items-center gap-2 px-8 py-2 rounded-full border text-sm transition-colors"
+                style={{
+                  borderColor: liked ? "#A66858" : "#d4c4b4",
+                  color: liked ? "#A66858" : "#8b7355",
+                  backgroundColor: "transparent",
+                }}
+              >
+                <HeartIcon filled={liked} />
+                Like
               </button>
             </div>
 
-            <div className="md:col-span-2">
-              <div className="mb-3 flex gap-2">
-                {book.categories.map((category) => (
-                  <span
-                    key={category}
-                    className="rounded-full bg-[#F5E6D3] px-3 py-1 text-sm text-[#A66858]"
-                  >
-                    {category}
-                  </span>
-                ))}
-              </div>
-
-              <h1 className="mb-2 text-3xl font-bold text-gray-900 md:text-4xl">
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <span
+                className="inline-block text-xs px-3 py-1 rounded-full mb-3"
+                style={{ backgroundColor: "#EEE1DB", color: "#A66858" }}
+              >
+                {book.category}
+              </span>
+              <h1
+                className="text-2xl font-bold mb-0.5 font-['Playfair_Display']"
+                style={{ color: "#2c1810" }}
+              >
                 {book.name}
               </h1>
-              <p className="mb-4 text-gray-600">by {book.author}</p>
-
-              <div className="mb-4 flex items-center gap-2">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={18}
-                      className={
-                        i < Math.floor(book.rating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }
-                    />
-                  ))}
-                </div>
-                <span className="font-semibold text-gray-900">{book.rating}</span>
-                <span className="text-gray-500">
-                  ({book.totalRatings.toLocaleString()} ratings)
+              <p className="text-sm mb-3" style={{ color: "#8b7355" }}>
+                by {book.author}
+              </p>
+              <div className="flex items-center gap-2 mb-4">
+                <Rating
+                  value={book.rating}
+                  precision={0.1}
+                  readOnly
+                  sx={{
+                    "& .MuiRating-iconFilled": {
+                      color: "#FFC107",
+                    },
+                  }}
+                />
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: "#2c1810" }}
+                >
+                  {book.rating.toFixed(1)}
                 </span>
               </div>
-
-              <p className="mb-6 leading-relaxed text-gray-700">
-                {book.description}
+              <p
+                className="text-sm leading-relaxed mb-5"
+                style={{ color: "#4a3728", lineHeight: "1.75" }}
+              >
+                {description}
               </p>
-
-              <div className="mb-6 flex items-center gap-4">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-gray-900">
-                    {book.price.toFixed(2)} THB
-                  </span>
-                  <span className="text-lg text-gray-400 line-through">
-                    {book.originalPrice.toFixed(2)} THB
-                  </span>
-                  <span className="rounded bg-red-500 px-2 py-1 text-sm text-white">
-                    -{book.discount}%
-                  </span>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <button
-                  onClick={() => addToCart(book)}
-                  className="w-full rounded-lg bg-[#A66858] px-8 py-3 font-medium text-white transition-colors hover:bg-[#8B5647] sm:w-auto"
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-2 gap-4 border-t border-gray-200 pt-8 md:grid-cols-4">
-            <div className="text-center">
-              <p className="mb-1 text-sm text-gray-500">Pages</p>
-              <p className="font-semibold text-gray-900">{book.pages}</p>
-            </div>
-            <div className="text-center">
-              <p className="mb-1 text-sm text-gray-500">Language</p>
-              <p className="font-semibold text-gray-900">{book.language}</p>
-            </div>
-            <div className="text-center">
-              <p className="mb-1 text-sm text-gray-500">Publisher</p>
-              <p className="font-semibold text-gray-900">{book.publisher}</p>
-            </div>
-            <div className="text-center">
-              <p className="mb-1 text-sm text-gray-500">Format</p>
-              <p className="font-semibold text-gray-900">{book.format}</p>
+              <p
+                className="text-3xl font-bold mb-4 font-['Playfair_Display']"
+                style={{ color: "#A66858" }}
+              >
+                {book.price.toLocaleString("th-TH", {
+                  minimumFractionDigits: 2,
+                })}{" "}
+                THB
+              </p>
+              <button
+                onClick={handleAddToCart}
+                className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-80"
+                style={{ backgroundColor: cartAdded ? "#8B5A3C" : "#A66858" }}
+              >
+                {cartAdded ? "Added to Cart!" : "Add to Cart"}
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-6 shadow-sm md:p-8">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Customer Reviews
-            </h2>
+        {/* Book metadata */}
+        <div className="bg-white rounded-2xl px-6 py-5 shadow-sm">
+          <div className="flex divide-x divide-gray-200">
+            <div className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-xs" style={{ color: "#9b8b7a" }}>
+                Pages
+              </span>
+              <span className="font-bold text-sm" style={{ color: "#2c1810" }}>
+                {book.pages}
+              </span>
+            </div>
+            <div className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-xs" style={{ color: "#9b8b7a" }}>
+                Language
+              </span>
+              <span className="font-bold text-sm" style={{ color: "#2c1810" }}>
+                {book.language}
+              </span>
+            </div>
+            <div className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-xs" style={{ color: "#9b8b7a" }}>
+                Publisher
+              </span>
+              <span className="font-bold text-sm" style={{ color: "#2c1810" }}>
+                {book.publisher}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Review section — login prompt OR write form */}
+        {isLoggedIn ? (
+          <WriteReviewForm onSubmit={handleSubmitReview} />
+        ) : (
+          <div
+            className="rounded-2xl px-6 py-4 text-center text-sm"
+            style={{
+              border: "1.5px dashed #A66858",
+              backgroundColor: "#faf7f4",
+              color: "#A66858",
+            }}
+          >
             <button
-              onClick={() => setIsWritingReview(true)}
-              className="rounded-lg bg-[#A66858] px-4 py-2 text-white transition-colors hover:bg-[#8B5647]"
+              className="underline hover:opacity-80"
+              onClick={() => setIsLoggedIn(true)}
             >
-              Write a Review
-            </button>
+              Please log in
+            </button>{" "}
+            to write a review for this book.
           </div>
+        )}
 
-          {isWritingReview && (
-            <WriteReviewForm onClose={() => setIsWritingReview(false)} />
-          )}
-
-          <ReviewSection reviews={reviews} totalReviews={book.totalRatings} />
-        </div>
-      </div>
-
+        {/* Customer Reviews */}
+        <section>
+          <h2
+            className="text-lg font-bold mb-4 font-['Playfair_Display']"
+            style={{ color: "#2c1810" }}
+          >
+            Customer Reviews
+          </h2>
+          <div className="space-y-3">
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="bg-white rounded-2xl px-5 py-4 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <Avatar name={review.name} />
+                      <div>
+                        <p
+                          className="font-bold text-sm"
+                          style={{ color: "#2c1810" }}
+                        >
+                          {review.name}
+                        </p>
+                        <p
+                          className="text-xs mt-0.5"
+                          style={{ color: "#9b8b7a" }}
+                        >
+                          {review.date}
+                        </p>
+                      </div>
+                    </div>
+                    <Rating
+                      value={review.rating}
+                      precision={0.5}
+                      readOnly
+                      size="small"
+                      sx={{
+                        "& .MuiRating-iconFilled": {
+                          color: "#FFC107",
+                        },
+                      }}
+                    />
+                  </div>
+                  <p
+                    className="mt-3 text-sm leading-relaxed"
+                    style={{ color: "#4a3728" }}
+                  >
+                    {review.text}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="bg-white rounded-2xl px-5 py-8 shadow-sm text-center">
+                <p className="text-sm" style={{ color: "#9b8b7a" }}>
+                  No reviews yet. Be the first to review this book!
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
       <Footer />
     </div>
   );
