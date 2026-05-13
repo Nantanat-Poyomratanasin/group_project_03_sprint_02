@@ -2,6 +2,7 @@ import { useState } from "react";
 import CategoryFilter from "../CategoryFilter";
 import SlideBooks from "../CardComponents/SlideBooks";
 import { bookData } from "../../mock-data/bookData";
+import { Link } from "react-router-dom";
 
 export default function CategorySample() {
   const categories = [
@@ -23,7 +24,9 @@ export default function CategorySample() {
     <div className="pt-16 pb-14 px-20 bg-[#EEE1DB]">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-5xl font-bold text-black">Popular Category</h2>
-        <button className="text-black hover:underline">See more &gt;</button>
+        <Link to="/productList">
+          <button className="text-black hover:underline">See more &gt;</button>
+        </Link>
       </div>
 
       {/* เรียกใช้ Component ที่เอมสร้าง */}

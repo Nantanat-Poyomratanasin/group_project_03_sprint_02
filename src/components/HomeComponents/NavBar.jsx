@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   ShoppingCart,
   CircleUser,
@@ -30,11 +31,13 @@ export default function NavBar() {
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-11 md:h-16">
           {/* Logo */}
-          <div className="shrink-0">
-            <h1 className="text-lg md:text-2xl font-bold text-gray-900">
-              Read<span className="text-[#A66858]">ly</span>
-            </h1>
-          </div>
+          <Link to="/">
+            <div className="shrink-0">
+              <h1 className="text-lg md:text-2xl font-bold text-gray-900">
+                Read<span className="text-[#A66858]">ly</span>
+              </h1>
+            </div>
+          </Link>
 
           {/* Search Bar with Category Dropdown - Desktop Only (hidden on mobile) */}
           <div className="hidden md:flex flex-1 min-w-0 max-w-2xl mx-1 md:mx-8">
@@ -99,10 +102,12 @@ export default function NavBar() {
                 </span>
               )}
             </button>
-            <button className="text-black hover:text-gray-700 transition-colors">
-              <CircleUser size={18} className="md:hidden" />
-              <CircleUser size={24} className="hidden md:block" />
-            </button>
+            <Link to="/login">
+              <button className="text-black hover:text-gray-700 transition-colors">
+                <CircleUser size={18} className="md:hidden" />
+                <CircleUser size={24} className="hidden md:block" />
+              </button>
+            </Link>
           </div>
         </div>
       </div>

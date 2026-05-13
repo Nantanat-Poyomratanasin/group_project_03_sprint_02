@@ -3,6 +3,7 @@ import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
 
 function SocialButton({ children }) {
   return (
@@ -118,12 +119,14 @@ export default function Login() {
                   <div className="flex justify-center">
                     {/* เดิมจะเป็น <button type="submit" className="...">Sign In</button> */}
                     {/* ตอนนี้ใช้ shadcn <Button /> แล้วคุมสี/ทรงของปุ่มด้วย className */}
-                    <Button
-                      type="submit"
-                      className="h-auto rounded-full bg-[#b0705a] px-12 py-3 text-base text-white hover:bg-[#9c604c]"
-                    >
-                      Sign In
-                    </Button>
+                    <Link to="/">
+                      <Button
+                        type="submit"
+                        className="h-auto rounded-full bg-[#b0705a] px-12 py-3 text-base text-white hover:bg-[#9c604c]"
+                      >
+                        Sign In
+                      </Button>
+                    </Link>
                   </div>
                 </form>
 
@@ -143,10 +146,12 @@ export default function Login() {
                 </div>
 
                 <p className="mt-8 text-center text-[17px] text-[#231815]">
-                  New to the sanctuary?{" "}
-                  <span className="font-medium text-[#b0705a]">
-                    Create an account
-                  </span>
+                  New to this website?{" "}
+                  <Link to="/register">
+                    <button className="font-medium text-[#b0705a]">
+                      Create an account
+                    </button>
+                  </Link>
                 </p>
               </div>
             </div>

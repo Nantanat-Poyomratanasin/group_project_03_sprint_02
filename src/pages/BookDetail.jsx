@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams, Navigate } from "react-router-dom";
 import { Rating } from "@mui/material";
 import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
@@ -77,7 +78,7 @@ function WriteReviewForm({ onSubmit }) {
           <div className="flex justify-center">
             <Rating
               value={rating}
-              onChange={(event, newValue) => setRating(newValue)}
+              onChange={(_, newValue) => setRating(newValue)}
               precision={0.5}
               size="large"
               sx={{
@@ -136,13 +137,18 @@ function formatDate(date) {
 }
 
 export default function BookDetail() {
-  // const { id } = useParams();
+  const { id } = useParams();
   const [liked, setLiked] = useState(false);
   const [cartAdded, setCartAdded] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // ดึงข้อมูลหนังสือจาก mock-data (ใช้หนังสือเล่มแรกสำหรับทดสอบ)
-  const book = bookData[0]; // Atomic Habits
+  // ดึงข้อมูลหนังสือจาก mock-data โดยใช้ id จาก URL
+  const book = bookData.find((b) => b.id === parseInt(id));
+
+  // ถ้าไม่เจอหนังสือ redirect ไปหน้าแรก
+  if (!book) {
+    return <Navigate to="/" replace />;
+  }
 
   // ดึง reviews ของหนังสือเล่มนี้
   const initialReviews = reviewData
@@ -189,7 +195,7 @@ export default function BookDetail() {
         <div className="bg-white rounded-2xl p-7 shadow-sm">
           <div className="flex gap-8">
             {/* Cover */}
-            <div className="flex flex-col items-center gap-4 flex-shrink-0">
+            <div className="flex flex-col items-center gap-4 shrink-0">
               <div className="w-48 h-64 rounded-lg overflow-hidden shadow-md">
                 {book.img ? (
                   <img
@@ -353,7 +359,7 @@ export default function BookDetail() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                       <Avatar name={review.name} />
-                      <div>
+                      <div className="shrink-0">
                         <p
                           className="font-bold text-sm"
                           style={{ color: "#2c1810" }}
