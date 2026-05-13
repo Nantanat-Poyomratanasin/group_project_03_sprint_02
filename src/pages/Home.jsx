@@ -53,7 +53,7 @@ export default function Home() {
 
   // อาจจะต้องเอาออกตอนใช้ router (?) แต่ต้องไปแก้ใน `PaementPage` ด้วย
   if (currentPage === "payment") {
-    return <PaymentPage onBackToHome={() => setCurrentPage("home")} />;
+    return <PaymentPage onBackToHome={() => setCurrentPage("ome")} />;
   }
 
   return (
