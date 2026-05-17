@@ -43,7 +43,7 @@ export default function SlideBooks({ books }) {
       >
         {books.map((book) => (
           <div key={book.id} className="flex-none">
-            <BookCard img={book.img} name={book.name} price={book.price} />
+            <BookCard book={book} />
           </div>
         ))}
       </div>

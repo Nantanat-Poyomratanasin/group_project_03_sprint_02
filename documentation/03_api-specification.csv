@@ -1,0 +1,30 @@
+,,,,Frontend,,Backend,
+Endpoint,Method,Purpose,,Frontend Component,Frontend Handler,Backend Route (API),Backend Controller
+/auth/signup,POST,Create an account.,,RegisterForm,handleSignup,POST /auth/signup,signUpUser
+/auth/login,POST,Login and get a JWT token.,,LoginForm,handleLogin,POST /auth/login,loginUser
+/users/me,GET,Fetch your profile.,,ProfilePage,handleGetProfile,GET /users/me,getCurrentUser
+/users/me,PATCH,Edit your profile.,,EditProfileForm,handleUpdateProfile,PATCH /users/me,updateCurrentUser
+/users,GET,[Admin] List all users.,,AdminUsersPage,handleGetUsers,GET /users,getAllUsers
+/users/:userId,PATCH,[Admin] Edit any user.,,AdminEditUser,handleUpdateUser,PATCH /users/:userId,updateUserById
+/users/:userId,DELETE,[Admin] Delete a user.,,AdminDeleteUser,handleDeleteUser,DELETE /users/:userId,deleteUserById
+/books,GET,List books (supports ?search= and ?category=).,,BookGrid / Home,handleGetBooks,GET /books,getBooks
+/books/:id,GET,Get details for one specific book.,,BookDetailsPage,handleGetBookById,GET /books/:id,getBookById
+/categories,GET,Get all category names for the dropdown.,,SelectedBar,handleGetCategories,GET /categories,getCategories
+/books,POST,[Admin] Add a new book to the store.,,AdminAddBookForm,handleAddBook,POST /books,createBook
+/books/:id,PATCH,[Admin] Update price or stock.,,AdminEditBookForm,handleUpdateBook,PATCH /books/:id,updateBook
+/books/:id,DELETE,[Admin] Remove a book from sale.,,AdminBookList,handleDeleteBook,DELETE /books/:id,deleteBook
+/orders,POST,Checkout: Finalize payment and clear cart.,,PaymentPage,handlePayNow,POST /orders,createOrder
+/orders/me,GET,Get the logged-in user's order history.,,PurchaseLibrary,handleGetOrders,GET /orders/me,getUserOrders
+/orders/:id,PATCH,[Admin] Update order,,AdminOrderUpdate,handleUpdateOrder,PATCH /orders/:id,updateOrder
+/coupons,POST,[Admin] Add coupon,,AdminCouponForm,handleAddCoupon,POST /coupons,createCoupon
+/coupons/validate,POST,Check if READ50 is valid before paying.,,PaymentPage,handleApplyCoupon,POST /coupons/validate,validateCoupon
+/coupons/:id,PATCH,[Admin] Update Coupon,,AdminCouponList,handleUpdateCoupon,PATCH /coupons/:id,updateCoupon
+/coupon/:id,DELETE,[Admin] Delete Coupon,,AdminCouponList,handleDeleteCoupon,DELETE /coupons/:id,deleteCoupon
+/orders,GET,[Admin] See every sale made in the store.,,AdminOrderList,handleGetOrdersAdmin,GET /orders,getOrderes
+/books/:id/reviews,GET,See what people said about a book.,,ReviewSection,handleGetReviews,GET /books/:id/reviews,getBookReviews
+/reviews,POST,Post a new rating/comment (User only).,,AddReviewForm,handleSubmitReview,POST /reviews,createReview
+/reviews/:id,DELETE,Remove a review (Admin).,,ReviewSection,handleDeleteReview,DELETE /reviews/:id,deleteReview
+/favorites/me,GET,"Get ""Liked"" books from the database.",,LikeItemsPopup,handleGetLikes,GET /favorites/me,getUserLikes
+/favorites/:id,POST,"Toggle a ""Like"" for a book.",,BookCard,handleToggleLike,POST /favorites/:id,toggleLike
+/cart/me,GET,Sync the cart across devices.,,Cart,handleGetCart,GET /cart/me,getUserCart
+/cart/me,POST,Toggle a cart,,Cart,handleUserCart,POST /cart/me,creaseUserCart

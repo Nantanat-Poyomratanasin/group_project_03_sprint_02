@@ -1,30 +1,42 @@
-import { bookData } from "../../mock-data/bookData";
+import { useCart } from "../../context/CartContext";
 
-export default function BookCard({ img, name, price }) {
+export default function BookCard({ book }) {
   const defaultImg = "https://via.placeholder.com/150?text=No+Image";
+  const { addToCart } = useCart();
 
   return (
-    <div className="flex flex-col w-64 p-4">
-      <div className="w-full h-80 overflow-hidden rounded-md mb-4">
+    <div className="flex w-64 flex-col rounded-[28px] bg-white p-4 shadow-sm">
+      <div className="mb-4 h-80 w-full overflow-hidden rounded-2xl">
         <img
-          src={img || defaultImg}
-          alt={name || "Book"}
+          src={book.img || defaultImg}
+          alt={book.name || "Book"}
           onError={(e) => {
             if (e.currentTarget.src !== defaultImg) {
               e.currentTarget.src = defaultImg;
             }
           }}
-          className="mb-4 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <h3 className="text-lg font-bold text-gray-800 line-clamp-2">{name}</h3>
-        <div className="text-yellow-500 text-sm">⭐⭐⭐⭐⭐</div>
+      <div className="flex flex-1 flex-col gap-2">
+        <h3 className="line-clamp-2 text-lg font-bold text-gray-800">
+          {book.name}
+        </h3>
+        <div className="text-sm text-yellow-500">
+          {"*".repeat(Math.round(book.rating || 5))}
+        </div>
 
         <p className="text-xl font-semibold text-black">
-          {price} <span className="text-sm font-normal">THB</span>
+          {book.price} <span className="text-sm font-normal">THB</span>
         </p>
+
+        <button
+          onClick={() => addToCart(book)}
+          className="mt-2 rounded-full bg-[#B77B68] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#A66858]"
+        >
+          Add to Cart
+        </button>
       </div>
     </div>
   );

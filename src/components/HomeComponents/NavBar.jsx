@@ -6,10 +6,12 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
+import { useCart } from "../../context/CartContext";
 
 export default function NavBar() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { setIsCartOpen, totalItems } = useCart();
 
   const categories = [
     "All Categories",
@@ -85,9 +87,17 @@ export default function NavBar() {
               <Heart size={18} className="md:hidden" />
               <Heart size={24} className="hidden md:block" />
             </button>
-            <button className="text-black hover:text-gray-700 transition-colors">
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative text-black hover:text-gray-700 transition-colors"
+            >
               <ShoppingCart size={18} className="md:hidden" />
               <ShoppingCart size={24} className="hidden md:block" />
+              {totalItems > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#A66858] px-1 text-[10px] font-bold text-white md:h-6 md:min-w-6 md:text-xs">
+                  {totalItems}
+                </span>
+              )}
             </button>
             <button className="text-black hover:text-gray-700 transition-colors">
               <CircleUser size={18} className="md:hidden" />

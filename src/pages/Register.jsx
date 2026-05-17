@@ -1,8 +1,40 @@
+import { useState } from "react";
+
 import NavBar from "@/components/HomeComponents/NavBar";
 import bgRegister from "../assets/BgLoginAndRegiter/bgRegiter.jpg";
 import Footer from "@/components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+function validateRegisterForm(formData) {
+  const errors = {};
+  const trimmedFullName = formData.fullName.trim();
+  const trimmedEmail = formData.email.trim();
+
+  if (!trimmedFullName) {
+    errors.fullName = "Full name is required";
+  }
+
+  if (!trimmedEmail) {
+    errors.email = "Email is required";
+  } else if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
+    errors.email = "Please enter a valid email address";
+  }
+
+  if (!formData.password.trim()) {
+    errors.password = "Password is required";
+  } else if (formData.password.trim().length < 8) {
+    errors.password = "Password must be at least 8 characters";
+  }
+
+  if (!formData.confirmPassword.trim()) {
+    errors.confirmPassword = "Please confirm your password";
+  } else if (formData.password !== formData.confirmPassword) {
+    errors.confirmPassword = "Passwords do not match";
+  }
+
+  return errors;
+}
 
 function SocialButton({ children }) {
   return (
@@ -14,27 +46,94 @@ function SocialButton({ children }) {
       variant="outline"
       className="min-w-[118px] rounded-full border-[#ead7ce] bg-white px-5 py-3 text-sm text-[#231815] shadow-[0_1px_0_rgba(0,0,0,0.04)] hover:bg-[#fffaf7]"
     >
-      {/* children คือข้อมูลที่ถูกส่งมาแสดงด้านในปุ่ม เช่น icon G และคำว่า Google */}
       {children}
     </Button>
   );
 }
 
-function FormField({ label, type = "text", placeholder }) {
+function FormField({
+  id,
+  label,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  error,
+}) {
   return (
     <label className="block">
       <span className="mb-2 block text-[18px] text-[#231815]">{label}</span>
+      {/* เดิมจะเป็น <input type={type} className="..." /> */}
       {/* ตอนนี้ใช้ shadcn <Input /> เพื่อได้ style base + focus state มาตรฐาน แล้วค่อยปรับ class เพิ่ม */}
       <Input
+        id={id}
         type={type}
+        value={value}
+        onChange={onChange}
         placeholder={placeholder}
-        className="h-12 rounded-full border-[#dcc8bf] bg-white px-6 text-sm text-[#3f322d] placeholder:text-[#cfbeb5] focus-visible:border-[#b57a63] focus-visible:ring-2 focus-visible:ring-[#e6c2b2]"
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={`h-12 rounded-full bg-white px-6 text-sm text-[#3f322d] placeholder:text-[#cfbeb5] focus-visible:border-[#b57a63] focus-visible:ring-2 focus-visible:ring-[#e6c2b2] ${
+          error ? "border-[#d15b52]" : "border-[#dcc8bf]"
+        }`}
       />
+      {error ? (
+        <p id={`${id}-error`} className="mt-2 text-sm text-[#d15b52]">
+          {error}
+        </p>
+      ) : null}
     </label>
   );
 }
 
 export default function Register() {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const updateField = (fieldName) => (event) => {
+    setFormData((currentValue) => ({
+      ...currentValue,
+      [fieldName]: event.target.value,
+    }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    // ดักข้อมูลก่อน submit ให้คล้าย pattern ใน react-form-validation-example
+    const validationErrors = validateRegisterForm(formData);
+    setErrors(validationErrors);
+    setSuccessMessage("");
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    window.setTimeout(() => {
+      setSuccessMessage(
+        `Account created successfully for ${formData.email.trim()}`,
+      );
+      setFormData({
+        fullName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setIsSubmitting(false);
+    }, 1000);
+  };
+
   return (
     <div className="min-h-screen bg-[#eee1db] text-[#231815]">
       <NavBar />
@@ -80,39 +179,88 @@ export default function Register() {
 
                 <form
                   className="mt-8 space-y-6 sm:mt-10"
-                  onSubmit={(event) => event.preventDefault()}
+                  onSubmit={handleSubmit}
+                  noValidate
                 >
                   <FormField
+                    id="register-full-name"
                     label="Full Name"
+                    value={formData.fullName}
+                    onChange={updateField("fullName")}
                     placeholder="E.g., Julian Barnes"
+                    error={errors.fullName}
                   />
                   <FormField
+                    id="register-email"
                     label="Email Address"
                     type="email"
+                    value={formData.email}
+                    onChange={updateField("email")}
                     placeholder="julian@readly.com"
+                    error={errors.email}
                   />
 
                   <div className="grid gap-6 sm:grid-cols-2">
-                    <FormField
-                      label="Password"
-                      type="password"
-                      placeholder="************"
-                    />
-                    <FormField
-                      label="Confirm Password"
-                      type="password"
-                      placeholder="************"
-                    />
+                    <div>
+                      <FormField
+                        id="register-password"
+                        label="Password"
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={updateField("password")}
+                        placeholder="************"
+                        error={errors.password}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowPassword((currentValue) => !currentValue)
+                        }
+                        className="mt-2 text-sm text-[#b0705a] transition hover:text-[#955440]"
+                      >
+                        {showPassword ? "Hide Password" : "Show Password"}
+                      </button>
+                    </div>
+
+                    <div>
+                      <FormField
+                        id="register-confirm-password"
+                        label="Confirm Password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={updateField("confirmPassword")}
+                        placeholder="************"
+                        error={errors.confirmPassword}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword((currentValue) => !currentValue)
+                        }
+                        className="mt-2 text-sm text-[#b0705a] transition hover:text-[#955440]"
+                      >
+                        {showConfirmPassword
+                          ? "Hide Password"
+                          : "Show Password"}
+                      </button>
+                    </div>
                   </div>
+
+                  {successMessage ? (
+                    <p className="text-center text-sm text-[#2f6f52] md:text-left">
+                      {successMessage}
+                    </p>
+                  ) : null}
 
                   <div className="flex items-center justify-center">
                     {/* เดิมจะเป็น <button type="submit" className="...">Create Account</button> */}
                     {/* ตอนนี้ใช้ shadcn <Button /> แล้วคุมสี/ทรงของปุ่มด้วย className */}
                     <Button
                       type="submit"
+                      disabled={isSubmitting}
                       className="h-auto rounded-full bg-[#b0705a] px-8 py-3 text-base text-white hover:bg-[#9c604c]"
                     >
-                      Create Account
+                      {isSubmitting ? "Creating..." : "Create Account"}
                     </Button>
                   </div>
                 </form>
