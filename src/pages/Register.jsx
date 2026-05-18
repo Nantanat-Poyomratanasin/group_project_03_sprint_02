@@ -5,6 +5,7 @@ import bgRegister from "../assets/BgLoginAndRegiter/bgRegiter.jpg";
 import Footer from "@/components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
 
 function validateRegisterForm(formData) {
   const errors = {};
@@ -283,7 +284,11 @@ export default function Register() {
 
                 <p className="mt-8 text-center text-[17px] text-[#231815] md:text-left">
                   Already have an account?{" "}
-                  <span className="font-medium text-[#b0705a]">Sign In</span>
+                  <Link to="/login">
+                    <button className="font-medium text-[#b0705a]">
+                      Sign In
+                    </button>
+                  </Link>
                 </p>
               </div>
             </div>

@@ -53,5 +53,41 @@ export const reviewData = [
     rating: 4.5,
     review: "Refreshingly honest and straight to the point.",
     created_at: "2026-04-20T16:20:00Z",
+  },
+  {
+    id: 7,
+    customer_id: 16,
+    customer_name: "Sarah Jenkins",
+    book_id: 1, // Atomic Habits
+    rating: 4.5,
+    review: "Very practical and easy to read. Some concepts felt a bit repetitive, but the core message is fantastic.",
+    created_at: "2026-02-02T14:30:00Z",
+  },
+  {
+    id: 8,
+    customer_id: 17,
+    customer_name: "Gabriel Perez",
+    book_id: 1, // Atomic Habits
+    rating: 5.0,
+    review: "I've bought copies of this for all my friends. It's that good.",
+    created_at: "2026-03-02T16:45:00Z",
+  },
+  {
+    id: 9,
+    customer_id: 18,
+    customer_name: "Samantha Howard",
+    book_id: 1, // Atomic Habits
+    rating: 5.0,
+    review: "I finally started going to the gym consistently because of habit stacking. Thank you, James Clear!",
+    created_at: "2026-02-04T08:20:00Z",
+  },
+  {
+    id: 10,
+    customer_id: 19,
+    customer_name: "Brooklyn Henderson",
+    book_id: 1, // Atomic Habits
+    rating: 5.0,
+    review: "I've read a lot of productivity books, but this is the only one where the advice actually stuck.",
+    created_at: "2026-02-09T19:30:00Z",
   }
 ];

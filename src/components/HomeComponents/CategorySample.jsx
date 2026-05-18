@@ -1,40 +1,52 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import CategoryFilter from "../CategoryFilter";
 import SlideBooks from "../CardComponents/SlideBooks";
 import { bookData } from "../../mock-data/bookData";
+import { Link } from "react-router-dom";
 
 export default function CategorySample() {
   const categories = [
     "Romance",
-    "Science Fiction & Fantasy",
-    "Self-Help",
+    "Science fiction & Fantasy",
+    "Self-help",
     "History",
-    "Children's Books",
+    "Children",
   ];
   const [activeCategory, setActiveCategory] = useState("Romance");
 
-  // กรองข้อมูล: ถ้าในข้อมูล (book.category) ตรงกับหมวดที่เลือก (activeCategory) ให้เก็บไว้
-  const filteredBooks = bookData.filter((book) => {
-    // ป้องกันเรื่องตัวพิมพ์เล็ก-ใหญ่ไม่ตรงกัน โดยใช้ toLowerCase()
-    return book.category.toLowerCase() === activeCategory.toLowerCase();
-  });
+  const filteredBooks = useMemo(() => {
+    // ถ้าเลือก All ให้ใช้หนังสือทั้งหมด ไม่งั้นค่อยกรองตามหมวด
+    const matchedBooks =
+      activeCategory === "All"
+        ? bookData
+        : bookData.filter((book) => book.category === activeCategory);
+
+    // เรียงคะแนนมากไปน้อย แล้วตัดให้เหลือแค่ 6 เล่ม
+    return [...matchedBooks].sort((a, b) => b.rating - a.rating).slice(0, 6);
+  }, [activeCategory]);
 
   return (
-    <div className="pt-16 pb-14 px-20 bg-[#EEE1DB]">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-5xl font-bold text-black">Popular Category</h2>
-        <button className="text-black hover:underline">See more &gt;</button>
+    <div className="bg-[#EEE1DB] px-4 pb-10 pt-10 sm:px-8 lg:px-20 lg:pb-14 lg:pt-16">
+      <div className="mb-6 flex items-center justify-between lg:mb-8">
+        <h2 className="text-3xl font-bold text-black sm:text-4xl lg:text-5xl">
+          Popular Category
+        </h2>
+        <Link to="/productList">
+          <button className="cursor-pointer text-sm font-semibold text-black hover:underline sm:text-base lg:text-lg">
+            See more &gt;
+          </button>
+        </Link>
       </div>
 
-      {/* เรียกใช้ Component ที่เอมสร้าง */}
       <CategoryFilter
+        className=""
         categories={categories}
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
       />
 
-      {/* ส่วนแสดง BookCard ที่เอมทำไว้ (ใส่ Filter ตามหมวดหมู่ได้เลยค่ะ) */}
-      <div className="flex items-center gap-6 overflow-x-auto py-4 ml-14 bg-[#F9EEE9] rounded-3xl">
+      {/* ปรับ padding ของกรอบตามขนาดหน้าจอ เพื่อให้การ์ดดูบาลานซ์ทุกขนาด */}
+      <div className="flex items-center justify-center rounded-[2rem] bg-[#F9F4F1] px-3 py-5 shadow-sm sm:rounded-[2.5rem] sm:px-5 sm:py-7 lg:ml-12 lg:px-6 lg:py-8">
         <SlideBooks books={filteredBooks} />
       </div>
     </div>

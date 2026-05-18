@@ -24,7 +24,7 @@ export default function SettingsPage() {
   });
 
   /* =========================
-     REFS
+     REFS --> manage click outside for profile, payment, and modals
   ========================= */
 
   const profileRef = useRef(null);
@@ -33,7 +33,7 @@ export default function SettingsPage() {
   const paymentButtonRef = useRef(null);
   const profileButtonRef = useRef(null);
   /* =========================
-     DATA
+     Initial DATA
   ========================= */
 
   const initialData = {
@@ -53,11 +53,23 @@ export default function SettingsPage() {
     cvv: "123",
   };
 
+  // แสดงข้อมูลบนหน้า settings โดยใช้ formData เป็นตัวเก็บข้อมูลหลัก
+  // และ profileDraft กับ paymentDraft เป็นตัวเก็บข้อมูลชั่วคราวเมื่อแก้ไข
   const [formData, setFormData] = useState(initialData);
 
   const [profileDraft, setProfileDraft] = useState(initialData);
 
   const [paymentDraft, setPaymentDraft] = useState(initialData);
+
+  const [addressDraft, setAddressDraft] = useState({
+    building: "",
+    road: "",
+    province: "",
+    district: "",
+    subDistrict: "",
+    postCode: "",
+    country: "",
+  });
 
   /* =========================
      CLICK OUTSIDE
@@ -136,7 +148,7 @@ export default function SettingsPage() {
             ACCOUNT SECTION
         ========================= */}
 
-        <section ref={profileRef} className="mb-16">
+        <section className="mb-16">
           {/* HEADER */}
           <div className="flex justify-between items-center mb-10">
             <h2 className="text-4xl font-bold text-[#2f1f1b]">
@@ -185,7 +197,10 @@ export default function SettingsPage() {
           </div>
 
           {/* GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div
+            ref={profileRef}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          >
             {renderProfileField("First name", "firstName")}
 
             {renderProfileField("Last name", "lastName")}
@@ -470,21 +485,43 @@ export default function SettingsPage() {
               <input
                 type="text"
                 placeholder="Building Number/Name, Street Name"
+                value={addressDraft.building}
+                onChange={(e) =>
+                  setAddressDraft((prev) => ({
+                    ...prev,
+                    building: e.target.value,
+                  }))
+                }
                 className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 text-sm outline-none focus:border-[#9f6453]"
               />
 
               <input
                 type="text"
                 placeholder="Street/Road Name, Soi, Moo"
+                value={addressDraft.road}
+                onChange={(e) =>
+                  setAddressDraft((prev) => ({
+                    ...prev,
+                    road: e.target.value,
+                  }))
+                }
                 className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 text-sm outline-none focus:border-[#9f6453]"
               />
 
               <input
                 type="text"
                 placeholder="Province"
+                value={addressDraft.province}
+                onChange={(e) =>
+                  setAddressDraft((prev) => ({
+                    ...prev,
+                    province: e.target.value,
+                  }))
+                }
                 className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 text-sm outline-none focus:border-[#9f6453]"
               />
 
+              {/* โค้ดแบบ select */}
               {/* <select className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 text-sm outline-none text-[#878584]">
                 <option>Province</option>
               </select> */}
@@ -493,6 +530,13 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   placeholder="Khet/Amphur"
+                  value={addressDraft.district}
+                  onChange={(e) =>
+                    setAddressDraft((prev) => ({
+                      ...prev,
+                      district: e.target.value,
+                    }))
+                  }
                   className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 text-sm outline-none focus:border-[#9f6453]"
                 />
 
@@ -503,6 +547,13 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   placeholder="Khwaeng/Tambon"
+                  value={addressDraft.subDistrict}
+                  onChange={(e) =>
+                    setAddressDraft((prev) => ({
+                      ...prev,
+                      subDistrict: e.target.value,
+                    }))
+                  }
                   className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 text-sm outline-none focus:border-[#9f6453]"
                 />
 
@@ -514,12 +565,26 @@ export default function SettingsPage() {
               <input
                 type="text"
                 placeholder="Post Code"
+                value={addressDraft.postCode}
+                onChange={(e) =>
+                  setAddressDraft((prev) => ({
+                    ...prev,
+                    postCode: e.target.value,
+                  }))
+                }
                 className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 text-sm outline-none focus:border-[#9f6453]"
               />
 
               <input
                 type="text"
                 placeholder="Country"
+                value={addressDraft.country}
+                onChange={(e) =>
+                  setAddressDraft((prev) => ({
+                    ...prev,
+                    country: e.target.value,
+                  }))
+                }
                 className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 text-sm outline-none focus:border-[#9f6453]"
               />
             </div>
@@ -527,7 +592,24 @@ export default function SettingsPage() {
             {/* BUTTONS */}
             <div className="flex justify-center gap-4 mt-8">
               <button
-                onClick={() => setIsAddressModalOpen(false)}
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    address: [
+                      addressDraft.building,
+                      addressDraft.road,
+                      addressDraft.province,
+                      addressDraft.district,
+                      addressDraft.subDistrict,
+                      addressDraft.postCode,
+                      addressDraft.country,
+                    ]
+                      .filter(Boolean)
+                      .join(", "),
+                  }));
+
+                  setIsAddressModalOpen(false);
+                }}
                 className="px-10 py-2.5 bg-[#b67662] text-white rounded-full hover:bg-[#9f6453] transition"
               >
                 Save
