@@ -27,15 +27,15 @@ export default function BookCard({ book, variant = "default" }) {
       <div
         className={`flex flex-col border border-[#EFE7E2] bg-white shadow-[0_4px_18px_rgba(44,24,16,0.08)] ${
           isHeroVariant
-            ? "h-[430px] w-[260px] rounded-[28px] p-4 sm:h-[460px] sm:w-[280px] sm:rounded-[30px] sm:p-5 lg:h-[520px] lg:w-[340px] lg:rounded-[34px] lg:p-7"
+            ? "min-h-[380px] w-[260px] rounded-[28px] p-4 sm:w-[280px] sm:rounded-[30px] sm:p-5  lg:w-[240px] lg:rounded-[34px] lg:p-4"
             : "h-[360px] w-[220px] rounded-[24px] p-3 sm:h-[360px] sm:w-[170px] sm:rounded-[24px] sm:p-3 lg:h-[392px] lg:w-[188px] lg:rounded-[28px] lg:p-4"
         }`}
       >
         {/* ปรับสัดส่วนรูปแยกตามขนาดของ card แต่ละแบบ */}
         <div
-          className={`overflow-hidden bg-[#F4ECE7] ${
+          className={`mx-auto overflow-hidden bg-[#F4ECE7] ${
             isHeroVariant
-              ? "mb-4 h-[250px] rounded-xl sm:h-[280px] sm:rounded-2xl lg:mb-5 lg:h-[320px]"
+              ? "mb-3 h-[240px] rounded-xl sm:h-[280px] sm:rounded-2xl  lg:h-[200px] lg:w-[160px] "
               : "mb-3 h-[220px] rounded-xl sm:h-[210px] lg:h-[238px]"
           }`}
         >
@@ -62,7 +62,7 @@ export default function BookCard({ book, variant = "default" }) {
             {book.name}
           </h3>
           <div
-            className={`flex items-center gap-2 text-[#1F2432] ${isHeroVariant ? "mt-4" : "mt-3"}`}
+            className={`flex items-center gap-2 text-[#1F2432] ${isHeroVariant ? "mt-3" : "mt-3"}`}
           >
             <span
               className={
@@ -85,7 +85,7 @@ export default function BookCard({ book, variant = "default" }) {
           </div>
 
           <div
-            className={`flex items-end gap-2 ${isHeroVariant ? "mb-4 mt-4" : "mb-3 mt-3"}`}
+            className={`flex items-end gap-2 ${isHeroVariant ? "mb-1 mt-1" : "mb-3 mt-3"}`}
           >
             <p
               className={
@@ -114,7 +114,7 @@ export default function BookCard({ book, variant = "default" }) {
               event.preventDefault();
               addToCart(book);
             }}
-            className={`mt-auto rounded-full bg-[#B77B68] font-semibold text-white transition hover:bg-[#A66858] ${
+            className={`mt-3 rounded-full bg-[#B77B68] font-semibold text-white transition hover:bg-[#A66858] ${
               isHeroVariant
                 ? "px-4 py-2.5 text-xs sm:px-4 sm:py-3 sm:text-sm"
                 : "px-3 py-2 text-[0.68rem] sm:text-[0.68rem] lg:text-[0.7rem]"
