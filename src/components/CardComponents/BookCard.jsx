@@ -21,6 +21,7 @@ export default function BookCard({ book, variant = "default" }) {
     maximumFractionDigits: 2,
   });
   const roundedRating = Number(book.rating?.toFixed(1) || 0);
+  const ratingPercentage = `${Math.max(0, Math.min(roundedRating, 5)) * 20}%`;
 
   return (
     <Link
@@ -31,9 +32,9 @@ export default function BookCard({ book, variant = "default" }) {
       <div
         className={`flex flex-col border border-[#EFE7E2] bg-white shadow-[0_4px_18px_rgba(44,24,16,0.08)] ${
           isHeroVariant
-            ? "h-[430px] w-[260px] rounded-[28px] p-4 sm:h-[460px] sm:w-[280px] sm:rounded-[30px] sm:p-5 lg:h-[520px] lg:w-[340px] lg:rounded-[34px] lg:p-7"
+            ? "min-h-[380px] w-[260px] rounded-[28px] p-4 sm:w-[280px] sm:rounded-[30px] sm:p-5  lg:w-[240px] lg:rounded-[34px] lg:p-4"
             : isGridVariant
-              ? "h-full min-h-[420px] w-full rounded-[26px] p-4 sm:min-h-[410px] sm:rounded-[28px] sm:p-4 lg:min-h-[430px] lg:rounded-[30px] lg:p-5"
+              ? "flex h-full min-h-[420px] w-full rounded-[24px] p-4 sm:min-h-[410px] sm:rounded-[26px] lg:min-h-[430px] lg:rounded-[28px] lg:p-5"
               : "h-[360px] w-[220px] rounded-[24px] p-3 sm:h-[360px] sm:w-[170px] sm:rounded-[24px] sm:p-3 lg:h-[392px] lg:w-[188px] lg:rounded-[28px] lg:p-4"
         }`}
       >
@@ -41,9 +42,9 @@ export default function BookCard({ book, variant = "default" }) {
         <div
           className={`mx-auto overflow-hidden bg-[#F4ECE7] ${
             isHeroVariant
-              ? "mb-4 h-[250px] rounded-xl sm:h-[280px] sm:rounded-2xl lg:mb-5 lg:h-[320px]"
+              ? "mb-3 h-[240px] rounded-xl sm:h-[280px] sm:rounded-2xl  lg:h-[200px] lg:w-[160px] "
               : isGridVariant
-                ? "mb-4 aspect-[4/5] w-full rounded-[20px]"
+                ? "mb-4 aspect-[4/5] w-full rounded-[18px] sm:rounded-[20px]"
                 : "mb-3 h-[220px] rounded-xl sm:h-[210px] lg:h-[238px]"
           }`}
         >
@@ -65,7 +66,7 @@ export default function BookCard({ book, variant = "default" }) {
               isHeroVariant
                 ? "text-[1rem] sm:text-[1.02rem] lg:text-[1.1rem]"
                 : isGridVariant
-                  ? "text-[1rem] sm:text-[1rem] lg:text-[1.04rem]"
+                  ? "text-[1rem] sm:text-[1rem] lg:text-[1.05rem]"
                   : "text-[0.88rem] sm:text-[0.9rem] lg:text-[0.98rem]"
             }`}
           >
@@ -73,7 +74,7 @@ export default function BookCard({ book, variant = "default" }) {
           </h3>
           <div
             className={`flex items-center gap-2 text-[#1F2432] ${
-              isHeroVariant ? "mt-4" : isGridVariant ? "mt-3.5" : "mt-3"
+              isHeroVariant ? "mt-3" : isGridVariant ? "mt-3.5" : "mt-3"
             }`}
           >
             <span
@@ -96,13 +97,21 @@ export default function BookCard({ book, variant = "default" }) {
                     : "text-[0.68rem] tracking-[0.1em] text-[#1F2432] sm:text-[0.65rem] lg:text-xs"
               }
             >
-              {"★".repeat(Math.round(book.rating || 5))}
+              <span className="relative inline-block leading-none text-[#D4C5BC]">
+                ★★★★★
+                <span
+                  className="absolute left-0 top-0 overflow-hidden whitespace-nowrap text-[#B77B68]"
+                  style={{ width: ratingPercentage }}
+                >
+                  ★★★★★
+                </span>
+              </span>
             </span>
           </div>
 
           <div
             className={`flex items-end gap-2 ${
-              isHeroVariant ? "mb-4 mt-4" : isGridVariant ? "mb-4 mt-4" : "mb-3 mt-3"
+              isHeroVariant ? "mb-1 mt-1" : isGridVariant ? "mb-4 mt-4" : "mb-3 mt-3"
             }`}
           >
             <p
@@ -136,12 +145,12 @@ export default function BookCard({ book, variant = "default" }) {
               event.preventDefault();
               addToCart(book);
             }}
-            className={`mt-3 rounded-full bg-[#B77B68] font-semibold text-white transition hover:bg-[#A66858] ${
+            className={`rounded-full bg-[#B77B68] font-semibold text-white transition hover:bg-[#A66858] ${
               isHeroVariant
                 ? "px-4 py-2.5 text-xs sm:px-4 sm:py-3 sm:text-sm"
                 : isGridVariant
-                  ? "px-4 py-2.5 text-sm"
-                  : "px-3 py-2 text-[0.68rem] sm:text-[0.68rem] lg:text-[0.7rem]"
+                  ? "mt-auto px-4 py-2.5 text-sm"
+                  : "mt-3 px-3 py-2 text-[0.68rem] sm:text-[0.68rem] lg:text-[0.7rem]"
             }`}
           >
             Add to Cart
