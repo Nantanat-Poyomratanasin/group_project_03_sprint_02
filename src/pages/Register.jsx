@@ -9,9 +9,13 @@ import { Link } from "react-router-dom";
 
 function validateRegisterForm(formData) {
   const errors = {};
+  const trimmedUsername = formData.username.trim();
   const trimmedFullName = formData.fullName.trim();
   const trimmedEmail = formData.email.trim();
 
+  if (!trimmedUsername) {
+    errors.username = "Username is required";
+  }
   if (!trimmedFullName) {
     errors.fullName = "Full name is required";
   }
@@ -89,6 +93,7 @@ function FormField({
 
 export default function Register() {
   const [formData, setFormData] = useState({
+    username: "",
     fullName: "",
     email: "",
     password: "",
@@ -126,6 +131,7 @@ export default function Register() {
         `Account created successfully for ${formData.email.trim()}`,
       );
       setFormData({
+        username: "",
         fullName: "",
         email: "",
         password: "",
@@ -236,7 +242,9 @@ export default function Register() {
                       <button
                         type="button"
                         onClick={() =>
-                          setShowConfirmPassword((currentValue) => !currentValue)
+                          setShowConfirmPassword(
+                            (currentValue) => !currentValue,
+                          )
                         }
                         className="mt-2 text-sm text-[#b0705a] transition hover:text-[#955440]"
                       >
