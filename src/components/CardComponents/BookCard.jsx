@@ -39,7 +39,7 @@ export default function BookCard({ book, variant = "default" }) {
       >
         {/* ปรับสัดส่วนรูปแยกตามขนาดของ card แต่ละแบบ */}
         <div
-          className={`overflow-hidden bg-[#F4ECE7] ${
+          className={`mx-auto overflow-hidden bg-[#F4ECE7] ${
             isHeroVariant
               ? "mb-4 h-[250px] rounded-xl sm:h-[280px] sm:rounded-2xl lg:mb-5 lg:h-[320px]"
               : isGridVariant
@@ -136,7 +136,7 @@ export default function BookCard({ book, variant = "default" }) {
               event.preventDefault();
               addToCart(book);
             }}
-            className={`mt-auto rounded-full bg-[#B77B68] font-semibold text-white transition hover:bg-[#A66858] ${
+            className={`mt-3 rounded-full bg-[#B77B68] font-semibold text-white transition hover:bg-[#A66858] ${
               isHeroVariant
                 ? "px-4 py-2.5 text-xs sm:px-4 sm:py-3 sm:text-sm"
                 : isGridVariant

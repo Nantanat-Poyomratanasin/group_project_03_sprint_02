@@ -14,8 +14,8 @@ export default function SlideBooks({
   );
   const isHeroVariant = variant === "hero";
   // กำหนดขนาด card และจำนวนใบที่ต้องเห็นตาม breakpoint
-  let cardWidth = isHeroVariant ? 340 : 188;
-  let cardGap = isHeroVariant ? 24 : 16;
+  let cardWidth = isHeroVariant ? 240 : 188;
+  let cardGap = isHeroVariant ? 12 : 16;
   let cardsPerView = visibleCards;
 
   if (screenWidth < 640) {
@@ -33,8 +33,7 @@ export default function SlideBooks({
   // ใช้ระยะเลื่อนทีละ 1 การ์ดพร้อม gap
   const CARD_STEP = cardWidth + cardGap;
   // ล็อกความกว้าง viewport ให้เห็นจำนวนการ์ดตามที่กำหนด
-  const viewportWidth =
-    cardsPerView * cardWidth + (cardsPerView - 1) * cardGap;
+  const viewportWidth = cardsPerView * cardWidth + (cardsPerView - 1) * cardGap;
 
   const updateArrowState = () => {
     const current = slideRef.current;
@@ -97,7 +96,7 @@ export default function SlideBooks({
     <div
       className={`relative mx-auto w-full ${
         isHeroVariant
-          ? "max-w-[1128px] px-4 sm:px-6 lg:px-12"
+          ? "max-w-[820px] px-4 sm:px-5 lg:px-8"
           : "max-w-[1100px] px-3 sm:px-6 lg:px-8"
       }`}
     >
@@ -135,13 +134,20 @@ export default function SlideBooks({
           width: `${viewportWidth}px`,
           maxWidth: "100%",
           gap: `${cardGap}px`,
-          paddingTop: isHeroVariant ? "16px" : screenWidth < 640 ? "12px" : "20px",
-          paddingBottom:
-            isHeroVariant ? "16px" : screenWidth < 640 ? "12px" : "20px",
+          paddingTop: isHeroVariant
+            ? "16px"
+            : screenWidth < 640
+              ? "12px"
+              : "20px",
+          paddingBottom: isHeroVariant
+            ? "16px"
+            : screenWidth < 640
+              ? "12px"
+              : "20px",
         }}
       >
         {books.map((book) => (
-          <div key={book.id} className="flex-none">
+          <div key={book.id} className="flex-none ">
             <BookCard book={book} variant={variant} />
           </div>
         ))}
