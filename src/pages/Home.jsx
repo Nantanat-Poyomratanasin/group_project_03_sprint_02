@@ -63,6 +63,8 @@ export default function Home() {
       <Banner />
       <CategorySample />
       <Footer />
+
+      <Cart onCheckout={() => setCurrentPage("payment")} />
     </>
   );
 }
