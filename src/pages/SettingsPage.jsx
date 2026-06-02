@@ -37,8 +37,7 @@ export default function SettingsPage() {
   ========================= */
 
   const initialData = {
-    firstName: "Robert",
-    lastName: "Johnson",
+    fullName: "Robert Johnson",
     username: "Robert.username",
     dob: "1999-09-12",
     email: "Robert.username@gmail.com",
@@ -201,9 +200,7 @@ export default function SettingsPage() {
             ref={profileRef}
             className="grid grid-cols-1 md:grid-cols-2 gap-8"
           >
-            {renderProfileField("First name", "firstName")}
-
-            {renderProfileField("Last name", "lastName")}
+            {renderProfileField("Full Name", "fullName")}
 
             {renderProfileField("Username", "username")}
 

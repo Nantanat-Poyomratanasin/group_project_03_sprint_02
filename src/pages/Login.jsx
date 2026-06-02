@@ -5,7 +5,7 @@ import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const USER_EMAIL_KEY = "readlyUserEmail";
 
@@ -102,6 +102,7 @@ export default function Login() {
   const [successMessage, setSuccessMessage] = useState(
     savedEmail ? `Welcome back, ${savedEmail}` : "",
   );
+  const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -123,6 +124,7 @@ export default function Login() {
       setSuccessMessage(`Login successful. Welcome back, ${trimmedEmail}`);
       setPassword("");
       setIsSubmitting(false);
+      navigate("/");
     }, 1000);
   };
 
@@ -221,15 +223,13 @@ export default function Login() {
                     {/* เดิมจะเป็น <button type="submit" className="...">Sign In</button> */}
                     {/* ตอนนี้ใช้ shadcn <Button /> แล้วคุมสี/ทรงของปุ่มด้วย className */}
 
-                    <Link to="/">
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="h-auto rounded-full bg-[#b0705a] px-12 py-3 text-base text-white hover:bg-[#9c604c]"
-                      >
-                        {isSubmitting ? "Signing In..." : "Sign In"}
-                      </Button>
-                    </Link>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="h-auto rounded-full bg-[#b0705a] px-12 py-3 text-base text-white hover:bg-[#9c604c]"
+                    >
+                      {isSubmitting ? "Signing In..." : "Sign In"}
+                    </Button>
                   </div>
                 </form>
 
