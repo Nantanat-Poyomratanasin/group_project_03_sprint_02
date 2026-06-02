@@ -123,7 +123,7 @@ export default function NavBar() {
                 </span>
               )}
             </button>
-            <div className="relative">
+            <div className="relative font-['Cormorant_Garamond']">
               <button
                 onClick={handleProfileClick}
                 className="text-black hover:text-gray-700 transition-colors"

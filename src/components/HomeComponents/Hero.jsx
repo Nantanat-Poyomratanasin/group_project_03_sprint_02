@@ -1,5 +1,6 @@
 import { bookData } from "../../mock-data/bookData";
 import SlideBooks from "../CardComponents/SlideBooks";
+import woodTexture from "../../assets/BgLoginAndRegiter/bglogin.jpg";
 
 export default function Hero() {
   // เลือกเฉพาะหนังสือที่ถูกปักหมุดให้แสดงในส่วน Trending
@@ -9,36 +10,47 @@ export default function Hero() {
 
   return (
     <section
-      className="flex flex-col gap-8 bg-[#ECE0DC] px-5 py-7 font-['Cormorant_Garamond']
-      md:px-10
-      lg:flex-row lg:items-start lg:px-16
+      className="flex flex-col lg:flex-row  font-['Cormorant_Garamond']
+       lg:items-stretch 
       "
     >
+      {/* ฝั่งซ้าย */}
       <div
         className="
+        bg-[#ECE0DC] 
           flex flex-col
-          gap-4
+          gap-1
+          md:gap-4
           md:max-w-full
-          md:items-Start
-          lg:max-w-[240px]
+          md:items-start
+          md:pl-8
+          lg:max-w-[360px]
           lg:flex-col
           whitespace-nowrap
           lg:whitespace-normal
+          lg:pl-16 lg:pr-8
+          pt-8
+          pb-4
+          px-6
           
         "
       >
         <h1
-          className="text-5xl font-extrabold leading-[0.95]
-            sm:text-6xl
-            md:text-5xl
-            lg:text-4xl"
+          className="text-3xl
+          font-extrabold
+          leading-[0.95]
+
+          sm:text-3xl
+          md:text-5xl
+          lg:text-5xl"
         >
           Trending Books
         </h1>
         <p
           className="mt-3
             max-w-[280px]
-            text-lg
+            text-m
+            lg:text-lg
             font-semibold
             leading-tight
             md:mt-0
@@ -48,13 +60,31 @@ export default function Hero() {
           Let's discover your new favorite books !
         </p>
       </div>
+
+      {/* ฝั่งขวา */}
       {/* กล่องด้านขวาล็อกให้เห็น 3 การ์ดพอดีตามภาพตัวอย่าง */}
       <div
-        className="w-full rounded-[32px] bg-[#faf4ef] px-6 py-6
-        md:px-8 md:py-8
-        lg:rounded-[36px] lg:px-6 lg:py-2"
+        className="
+            flex-1
+            w-full
+            bg-cover
+            bg-center
+            bg-no-repeat
+            py-6
+            px-4
+            lg:py-8
+          "
+        style={{
+          backgroundImage: `url(${woodTexture})`,
+        }}
       >
-        <SlideBooks books={trendingBooks} variant="hero" visibleCards={3} />
+        <div
+          className="w-full mx-auto rounded-[32px] bg-[#faf4ef] px-5 py-1 
+        md:px-5 md:py-8 md:max-w-[720px]
+        lg:rounded-[36px] lg:px-6 lg:py-2 lg:max-w-[840px]"
+        >
+          <SlideBooks books={trendingBooks} variant="hero" visibleCards={3} />
+        </div>
       </div>
     </section>
   );
