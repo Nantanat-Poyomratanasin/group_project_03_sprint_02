@@ -98,9 +98,9 @@ const ProductList = () => {
 
           {/* Responsive Grid Layout */}
           {filteredBooks.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 min-h-[600px] content-start">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-7 min-h-[600px] content-start items-stretch">
               {currentBooks.map((book) => (
-                <BookCard key={book.id} book={book} />
+                <BookCard key={book.id} book={book} variant="grid" />
               ))}
             </div>
           ) : (
