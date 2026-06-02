@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import {
   ShoppingCart,
   CircleUser,
@@ -8,11 +7,32 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "../../context/CartContext";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function NavBar() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { setIsCartOpen, totalItems } = useCart();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const navigate = useNavigate();
+
+  const isLoggedIn = !!localStorage.getItem("readlyUserEmail");
+
+  const handleProfileClick = () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    setIsProfileOpen((prev) => !prev);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("readlyUserEmail");
+    setIsProfileOpen(false);
+    navigate("/");
+  };
 
   const categories = [
     "All Categories",
@@ -102,12 +122,36 @@ export default function NavBar() {
                 </span>
               )}
             </button>
-            <Link to="/login">
-              <button className="text-black hover:text-gray-700 transition-colors">
+            <div className="relative">
+              <button
+                onClick={handleProfileClick}
+                className="text-black hover:text-gray-700 transition-colors"
+              >
                 <CircleUser size={18} className="md:hidden" />
                 <CircleUser size={24} className="hidden md:block" />
               </button>
-            </Link>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 top-10 z-50 w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                  <button
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate("/setting");
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-[#f8f3f0]"
+                  >
+                    Settings
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-50"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
