@@ -13,6 +13,7 @@ export default function NavBar() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { setIsCartOpen, totalItems } = useCart();
+
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const navigate = useNavigate();
