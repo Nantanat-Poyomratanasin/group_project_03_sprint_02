@@ -5,8 +5,10 @@ import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+// ตอนพัฒนา local ตอนนี้ backend ฝั่ง group ใช้ base URL นี้อยู่
+const API_BASE_URL = "http://localhost:3000/api";
 const USER_EMAIL_KEY = "readlyUserEmail";
 
 function validateLoginForm(email, password) {
@@ -89,6 +91,7 @@ function FormField({
 }
 
 export default function Login() {
+  const navigate = useNavigate();
   const savedEmail =
     typeof window !== "undefined"
       ? (localStorage.getItem(USER_EMAIL_KEY) ?? "")
@@ -99,17 +102,19 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState(
     savedEmail ? `Welcome back, ${savedEmail}` : "",
   );
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     // ดักข้อมูลก่อน submit เหมือนตัวอย่าง react-form-validation-example
     const validationErrors = validateLoginForm(email, password);
     setErrors(validationErrors);
     setSuccessMessage("");
+    setServerError("");
 
     if (Object.keys(validationErrors).length > 0) {
       return;
@@ -117,13 +122,42 @@ export default function Login() {
 
     setIsSubmitting(true);
 
-    window.setTimeout(() => {
+    try {
       const trimmedEmail = email.trim();
+
+      // route นี้จะตรวจ email/password และเซ็ต accessToken กลับมาใน cookie
+      const response = await fetch(`${API_BASE_URL}/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: trimmedEmail.toLowerCase(),
+          password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Login failed");
+      }
+
+      // เก็บ email ไว้ใช้เติมค่าเริ่มต้นให้ฟอร์มครั้งถัดไป
       localStorage.setItem(USER_EMAIL_KEY, trimmedEmail);
       setSuccessMessage(`Login successful. Welcome back, ${trimmedEmail}`);
       setPassword("");
+
+      // login สำเร็จแล้วพากลับหน้าแรกก่อนได้
+      window.setTimeout(() => {
+        navigate("/");
+      }, 1000);
+    } catch (error) {
+      setServerError(error.message || "Something went wrong");
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -217,19 +251,22 @@ export default function Login() {
                     </p>
                   ) : null}
 
+                  {serverError ? (
+                    <p className="text-center text-sm text-[#d15b52]">
+                      {serverError}
+                    </p>
+                  ) : null}
+
                   <div className="flex justify-center">
                     {/* เดิมจะเป็น <button type="submit" className="...">Sign In</button> */}
                     {/* ตอนนี้ใช้ shadcn <Button /> แล้วคุมสี/ทรงของปุ่มด้วย className */}
-
-                    <Link to="/">
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="h-auto rounded-full bg-[#b0705a] px-12 py-3 text-base text-white hover:bg-[#9c604c]"
-                      >
-                        {isSubmitting ? "Signing In..." : "Sign In"}
-                      </Button>
-                    </Link>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="h-auto rounded-full bg-[#b0705a] px-12 py-3 text-base text-white hover:bg-[#9c604c]"
+                    >
+                      {isSubmitting ? "Signing In..." : "Sign In"}
+                    </Button>
                   </div>
                 </form>
 

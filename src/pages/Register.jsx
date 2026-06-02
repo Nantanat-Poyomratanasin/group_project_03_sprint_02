@@ -5,7 +5,10 @@ import bgRegister from "../assets/BgLoginAndRegiter/bgRegiter.jpg";
 import Footer from "@/components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+// ตอนพัฒนา local ตอนนี้ backend ฝั่ง group ใช้ base URL นี้อยู่
+const API_BASE_URL = "http://localhost:3000/api";
 
 function validateRegisterForm(formData) {
   const errors = {};
@@ -15,6 +18,10 @@ function validateRegisterForm(formData) {
 
   if (!trimmedUsername) {
     errors.username = "Username is required";
+  } else if (trimmedUsername.length < 3) {
+    errors.username = "Username must be at least 3 characters";
+  } else if (trimmedUsername.length > 20) {
+    errors.username = "Username must be at most 20 characters";
   }
   if (!trimmedFullName) {
     errors.fullName = "Full name is required";
@@ -22,7 +29,7 @@ function validateRegisterForm(formData) {
 
   if (!trimmedEmail) {
     errors.email = "Email is required";
-  } else if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
     errors.email = "Please enter a valid email address";
   }
 
@@ -30,6 +37,8 @@ function validateRegisterForm(formData) {
     errors.password = "Password is required";
   } else if (formData.password.trim().length < 8) {
     errors.password = "Password must be at least 8 characters";
+  } else if (formData.password.trim().length > 72) {
+    errors.password = "Password must be at most 72 characters";
   }
 
   if (!formData.confirmPassword.trim()) {
@@ -104,6 +113,8 @@ export default function Register() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
+  const [serverError, setServerError] = useState("");
 
   const updateField = (fieldName) => (event) => {
     setFormData((currentValue) => ({
@@ -112,13 +123,14 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     // ดักข้อมูลก่อน submit ให้คล้าย pattern ใน react-form-validation-example
     const validationErrors = validateRegisterForm(formData);
     setErrors(validationErrors);
     setSuccessMessage("");
+    setServerError("");
 
     if (Object.keys(validationErrors).length > 0) {
       return;
@@ -126,10 +138,31 @@ export default function Register() {
 
     setIsSubmitting(true);
 
-    window.setTimeout(() => {
-      setSuccessMessage(
-        `Account created successfully for ${formData.email.trim()}`,
-      );
+    try {
+      // ส่งเฉพาะ field ที่ backend ของ route POST /api/users ต้องใช้
+      const payload = {
+        username: formData.username.trim(),
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to create account");
+      }
+
+      setSuccessMessage("Account created successfully");
+
       setFormData({
         username: "",
         fullName: "",
@@ -137,8 +170,16 @@ export default function Register() {
         password: "",
         confirmPassword: "",
       });
+
+      // สมัครสำเร็จแล้วพาไปหน้า login เพื่อให้ user เข้าสู่ระบบต่อได้ทันที
+      window.setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+    } catch (error) {
+      setServerError(error.message || "Something went wrong");
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -189,6 +230,14 @@ export default function Register() {
                   onSubmit={handleSubmit}
                   noValidate
                 >
+                  <FormField
+                    id="register-username"
+                    label="Username"
+                    value={formData.username}
+                    onChange={updateField("username")}
+                    placeholder="Julian"
+                    error={errors.username}
+                  />
                   <FormField
                     id="register-full-name"
                     label="Full Name"
@@ -254,6 +303,12 @@ export default function Register() {
                       </button>
                     </div>
                   </div>
+
+                  {serverError ? (
+                    <p className="text-center text-sm text-[#d15b52] md:text-left">
+                      {serverError}
+                    </p>
+                  ) : null}
 
                   {successMessage ? (
                     <p className="text-center text-sm text-[#2f6f52] md:text-left">
