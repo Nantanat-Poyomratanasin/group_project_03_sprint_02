@@ -1020,3 +1020,187 @@ export function CouponCodeTable() {
     </div>
   );
 }
+
+// ==========================================
+// 7. FEEDBACK TABLE
+// ==========================================
+export function FeedbackTable() {
+  const [rows, setRows] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rowModesModel, setRowModesModel] = useState({});
+  const [selectedRows, setSelectedRows] = useState({
+    type: "include",
+    ids: new Set(),
+  });
+
+  useEffect(() => {
+    setIsLoading(true);
+    apiClient
+      .get("/feedback")
+      .then((response) => {
+        const actualData = Array.isArray(response)
+          ? response
+          : response?.data || [];
+        setRows(
+          actualData.map((item) => ({ ...item, id: item._id || item.id })),
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        setRows([]);
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const columns = [
+    { field: "id", headerName: "Feedback ID", width: 220 },
+    {
+      field: "user_id",
+      headerName: "User ID",
+      width: 220,
+      editable: true,
+    },
+    {
+      field: "message",
+      headerName: "Message",
+      minWidth: 300,
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: "createdAt",
+      headerName: "Created At",
+      width: 180,
+      type: "dateTime",
+      valueGetter: parseDate,
+    },
+    {
+      field: "updatedAt",
+      headerName: "Updated At",
+      width: 180,
+      type: "dateTime",
+      valueGetter: parseDate,
+    },
+  ];
+
+  const handleAdd = () => {
+    const newId = `temp-${Date.now()}`;
+    const newRow = {
+      id: newId,
+      user_id: "",
+      message: "New feedback message",
+      isNew: true,
+    };
+    setRows((oldRows) => [newRow, ...oldRows]);
+    setSelectedRows({ type: "include", ids: new Set([newId]) });
+    setRowModesModel({
+      [newId]: { mode: GridRowModes.Edit, fieldToFocus: "user_id" },
+    });
+  };
+
+  const handleSelectionChange = (newSelectionModel) => {
+    setSelectedRows(newSelectionModel);
+    const ids = Array.from(newSelectionModel.ids);
+    setRowModesModel(
+      ids.length === 1 ? { [ids[0]]: { mode: GridRowModes.Edit } } : {},
+    );
+  };
+
+  const handleEditOrSave = () => {
+    const ids = Array.from(selectedRows.ids);
+    if (ids.length !== 1) return;
+    const isEditing = rowModesModel[ids[0]]?.mode === GridRowModes.Edit;
+    setRowModesModel({
+      ...rowModesModel,
+      [ids[0]]: { mode: isEditing ? GridRowModes.View : GridRowModes.Edit },
+    });
+  };
+
+  const processRowUpdate = async (newRow, oldRow) => {
+    const isNew = newRow.isNew;
+    const payload = { ...newRow };
+    delete payload.isNew;
+    if (isNew) delete payload.id;
+
+    try {
+      let savedRow;
+      if (isNew) {
+        // Automatically set dates on creation if backend doesn't handle it immediately
+        payload.createdAt = new Date().toISOString();
+        payload.updatedAt = new Date().toISOString();
+
+        const response = await apiClient.post("/feedback", payload);
+        savedRow = { ...response, id: response._id };
+        setRows((prevRows) => [
+          ...prevRows.filter((r) => r.id !== newRow.id),
+          savedRow,
+        ]);
+      } else {
+        const updateId = payload._id || payload.id;
+        payload.updatedAt = new Date().toISOString();
+
+        const response = await apiClient.put(`/feedback/${updateId}`, payload);
+        savedRow = { ...response, id: response._id || response.id };
+        setRows((prevRows) =>
+          prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
+        );
+      }
+      return savedRow;
+    } catch (error) {
+      console.error(error);
+      return oldRow;
+    }
+  };
+
+  const handleRemove = async () => {
+    try {
+      await Promise.all(
+        Array.from(selectedRows.ids).map((id) => {
+          const actualId = rows.find((r) => r.id === id)?._id || id;
+          return apiClient.delete(`/feedback/${actualId}`);
+        }),
+      );
+      setRows((prevRows) =>
+        prevRows.filter((row) => !selectedRows.ids.has(row.id)),
+      );
+      setSelectedRows({ type: "include", ids: new Set() });
+      setRowModesModel({});
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const isEditing =
+    Array.from(selectedRows.ids).length === 1 &&
+    rowModesModel[Array.from(selectedRows.ids)[0]]?.mode === GridRowModes.Edit;
+
+  return (
+    <div className="w-full h-[500px] p-6 bg-gray-50 flex flex-col">
+      <TableActions
+        onAdd={handleAdd}
+        onEditOrSave={handleEditOrSave}
+        onRemove={handleRemove}
+        canEdit={selectedRows.ids.size === 1}
+        canRemove={selectedRows.ids.size > 0}
+        isEditing={isEditing}
+      />
+      <div className="flex-grow w-full">
+        <DataGrid
+          loading={isLoading}
+          rows={rows}
+          columns={columns}
+          checkboxSelection
+          disableRowSelectionOnClick
+          sx={dataGridStyles}
+          rowSelectionModel={selectedRows}
+          onRowSelectionModelChange={handleSelectionChange}
+          editMode="row"
+          rowModesModel={rowModesModel}
+          onRowModesModelChange={setRowModesModel}
+          processRowUpdate={processRowUpdate}
+        />
+      </div>
+    </div>
+  );
+}
+
