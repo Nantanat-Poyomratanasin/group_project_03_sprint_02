@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="h-auto bg-[#EEE1DB] border-t border-[#A66858] my-4 font-['Cormorant_Garamond']">
+    <footer className="h-auto bg-[#EEE1DB] border-t border-[#A66858] font-['Cormorant_Garamond']">
       <div className="px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div className="md:col-span-2">
