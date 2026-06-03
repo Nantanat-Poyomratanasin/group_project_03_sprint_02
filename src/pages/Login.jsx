@@ -6,19 +6,21 @@ import Footer from "../components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
-
-const USER_EMAIL_KEY = "readlyUserEmail";
+import { useAuth } from "../context/AuthContext";
 
 function validateLoginForm(email, password) {
+  // errors จะเก็บข้อความผิดพลาดของแต่ละ field
   const errors = {};
   const trimmedEmail = email.trim();
 
+  // validate email แบบพื้นฐานก่อนส่ง backend
   if (!trimmedEmail) {
     errors.email = "Email is required";
   } else if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
     errors.email = "Please enter a valid email address";
   }
 
+  // password ไม่ควรปล่อยว่าง
   if (!password.trim()) {
     errors.password = "Password is required";
   }
@@ -89,43 +91,55 @@ function FormField({
 }
 
 export default function Login() {
-  const savedEmail =
-    typeof window !== "undefined"
-      ? (localStorage.getItem(USER_EMAIL_KEY) ?? "")
-      : "";
-
-  const [email, setEmail] = useState(savedEmail);
+  const navigate = useNavigate();
+  // ดึง function login จาก AuthContext มาใช้แทนการเขียน fetch ซ้ำในหน้านี้
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  // isSubmitting ใช้ป้องกันการกดปุ่มซ้ำระหว่างรอ backend ตอบกลับ
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(
-    savedEmail ? `Welcome back, ${savedEmail}` : "",
-  );
-  const navigate = useNavigate();
+  // serverError = ข้อความผิดพลาดจาก backend เช่น password ไม่ถูก
+  const [serverError, setServerError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     // ดักข้อมูลก่อน submit เหมือนตัวอย่าง react-form-validation-example
     const validationErrors = validateLoginForm(email, password);
     setErrors(validationErrors);
     setSuccessMessage("");
+    setServerError("");
 
     if (Object.keys(validationErrors).length > 0) {
       return;
     }
 
+    // เมื่อ validation ผ่านแล้วค่อยเริ่มเรียก backend
     setIsSubmitting(true);
 
-    window.setTimeout(() => {
+    try {
       const trimmedEmail = email.trim();
-      localStorage.setItem(USER_EMAIL_KEY, trimmedEmail);
+
+      // ให้ AuthContext จัดการ login + session + profile กลางของทั้งแอป
+      await login(trimmedEmail, password);
+      // ถ้า login สำเร็จ แสดงข้อความสั้น ๆ ก่อนพากลับหน้าแรก
       setSuccessMessage(`Login successful. Welcome back, ${trimmedEmail}`);
       setPassword("");
+
+      // login สำเร็จแล้วพากลับหน้าแรกก่อนได้
+      window.setTimeout(() => {
+        navigate("/");
+      }, 1000);
+    } catch (error) {
+      // ถ้า backend ตอบ error จะมาเข้า catch และแสดงบนหน้า form
+      setServerError(error.message || "Something went wrong");
+    } finally {
+      // ปิดสถานะ loading ทุกกรณี
       setIsSubmitting(false);
-      navigate("/");
-    }, 1000);
+    }
   };
 
   return (
@@ -219,10 +233,15 @@ export default function Login() {
                     </p>
                   ) : null}
 
+                  {serverError ? (
+                    <p className="text-center text-sm text-[#d15b52]">
+                      {serverError}
+                    </p>
+                  ) : null}
+
                   <div className="flex justify-center">
                     {/* เดิมจะเป็น <button type="submit" className="...">Sign In</button> */}
                     {/* ตอนนี้ใช้ shadcn <Button /> แล้วคุมสี/ทรงของปุ่มด้วย className */}
-
                     <Button
                       type="submit"
                       disabled={isSubmitting}
