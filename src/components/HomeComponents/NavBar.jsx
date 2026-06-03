@@ -8,29 +8,34 @@ import {
 import { useState } from "react";
 import { useCart } from "../../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function NavBar() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { setIsCartOpen, totalItems } = useCart();
+  // ดึงข้อมูล user และ function auth กลางจาก AuthContext
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
+  // state นี้ใช้ควบคุมเมนู profile dropdown
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const navigate = useNavigate();
 
-  const isLoggedIn = !!localStorage.getItem("readlyUserEmail");
-
   const handleProfileClick = () => {
-    if (!isLoggedIn) {
+    // ถ้ายังไม่ login ให้พาไปหน้า login ก่อน
+    if (!isAuthenticated) {
       navigate("/login");
       return;
     }
 
+    // ถ้า login แล้วให้เปิด/ปิดเมนู profile
     setIsProfileOpen((prev) => !prev);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("readlyUserEmail");
+  const handleLogout = async () => {
+    // logout จะลบ cookie session ผ่าน backend และล้าง user ใน context
+    await logout();
     setIsProfileOpen(false);
     navigate("/");
   };
@@ -123,13 +128,19 @@ export default function NavBar() {
                 </span>
               )}
             </button>
-            <div className="relative">
+            <div className="relative font-['Cormorant_Garamond']">
               <button
                 onClick={handleProfileClick}
-                className="text-black hover:text-gray-700 transition-colors"
+                className="flex items-center gap-2 text-black hover:text-gray-700 transition-colors"
               >
                 <CircleUser size={18} className="md:hidden" />
                 <CircleUser size={24} className="hidden md:block" />
+                {/* ตอน login แล้ว ค่อยโชว์ชื่อ user ข้างไอคอน */}
+                {isAuthenticated && !isLoading ? (
+                  <span className="hidden text-sm font-medium md:inline">
+                    {user?.username || "Profile"}
+                  </span>
+                ) : null}
               </button>
 
               {isProfileOpen && (

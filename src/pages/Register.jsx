@@ -5,33 +5,51 @@ import bgRegister from "../assets/BgLoginAndRegiter/bgRegiter.jpg";
 import Footer from "@/components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+// ตอนพัฒนา local ตอนนี้ backend ฝั่ง group ใช้ base URL นี้อยู่
+const API_BASE_URL =
+  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
 
 function validateRegisterForm(formData) {
+  // errors จะเก็บข้อความ error ของแต่ละ field
   const errors = {};
+  // trim() เอา space หน้า-หลังออกก่อน validate
   const trimmedUsername = formData.username.trim();
   const trimmedFullName = formData.fullName.trim();
   const trimmedEmail = formData.email.trim();
 
+  // username ต้องตรงกับเงื่อนไข backend: required, min 3, max 20
   if (!trimmedUsername) {
     errors.username = "Username is required";
+  } else if (trimmedUsername.length < 3) {
+    errors.username = "Username must be at least 3 characters";
+  } else if (trimmedUsername.length > 20) {
+    errors.username = "Username must be at most 20 characters";
   }
+
+  // fullName เป็น field บังคับจาก backend เช่นกัน
   if (!trimmedFullName) {
     errors.fullName = "Full name is required";
   }
 
+  // regex นี้ใช้เช็กรูปแบบ email ขั้นพื้นฐานก่อนส่งไป backend
   if (!trimmedEmail) {
     errors.email = "Email is required";
-  } else if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
     errors.email = "Please enter a valid email address";
   }
 
+  // password ฝั่ง backend ต้องอย่างน้อย 8 และไม่เกิน 72
   if (!formData.password.trim()) {
     errors.password = "Password is required";
   } else if (formData.password.trim().length < 8) {
     errors.password = "Password must be at least 8 characters";
+  } else if (formData.password.trim().length > 72) {
+    errors.password = "Password must be at most 72 characters";
   }
 
+  // confirmPassword มีไว้เช็กความถูกต้องฝั่ง UI ก่อนยิง API
   if (!formData.confirmPassword.trim()) {
     errors.confirmPassword = "Please confirm your password";
   } else if (formData.password !== formData.confirmPassword) {
@@ -92,6 +110,7 @@ function FormField({
 }
 
 export default function Register() {
+  // formData รวมค่าทั้งหมดของฟอร์มไว้ใน object เดียว
   const [formData, setFormData] = useState({
     username: "",
     fullName: "",
@@ -99,37 +118,68 @@ export default function Register() {
     password: "",
     confirmPassword: "",
   });
+  // state ชุดนี้ควบคุมการเปิด/ปิดการมองเห็น password
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // errors = error ของแต่ละช่อง, serverError = error ที่ backend ส่งกลับมา
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
+  const [serverError, setServerError] = useState("");
 
   const updateField = (fieldName) => (event) => {
+    // ใช้ function เดียวอัปเดตได้หลาย input โดยส่งชื่อ field เข้ามา
     setFormData((currentValue) => ({
       ...currentValue,
       [fieldName]: event.target.value,
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     // ดักข้อมูลก่อน submit ให้คล้าย pattern ใน react-form-validation-example
     const validationErrors = validateRegisterForm(formData);
     setErrors(validationErrors);
     setSuccessMessage("");
+    setServerError("");
 
     if (Object.keys(validationErrors).length > 0) {
       return;
     }
 
+    // เมื่อไม่มี error ค่อยเริ่มส่งข้อมูลไป backend
     setIsSubmitting(true);
 
-    window.setTimeout(() => {
-      setSuccessMessage(
-        `Account created successfully for ${formData.email.trim()}`,
-      );
+    try {
+      // ส่งเฉพาะ field ที่ backend ของ route POST /api/users ต้องใช้
+      const payload = {
+        username: formData.username.trim(),
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // อ่าน response body กลับจาก backend
+      const result = await response.json();
+
+      if (!response.ok) {
+        // ถ้า backend ตอบไม่ผ่าน เช่น email ซ้ำ จะโยนเข้า catch
+        throw new Error(result.message || "Failed to create account");
+      }
+
+      // สมัครสำเร็จ แสดงข้อความและล้างค่าฟอร์ม
+      setSuccessMessage("Account created successfully");
+
       setFormData({
         username: "",
         fullName: "",
@@ -137,8 +187,18 @@ export default function Register() {
         password: "",
         confirmPassword: "",
       });
+
+      // สมัครสำเร็จแล้วพาไปหน้า login เพื่อให้ user เข้าสู่ระบบต่อได้ทันที
+      window.setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+    } catch (error) {
+      // ข้อความ error จาก backend จะมาแสดงในหน้า form ตรงนี้
+      setServerError(error.message || "Something went wrong");
+    } finally {
+      // finally จะทำงานเสมอ ไม่ว่าจะ success หรือ error
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -189,6 +249,14 @@ export default function Register() {
                   onSubmit={handleSubmit}
                   noValidate
                 >
+                  <FormField
+                    id="register-username"
+                    label="Username"
+                    value={formData.username}
+                    onChange={updateField("username")}
+                    placeholder="Julian"
+                    error={errors.username}
+                  />
                   <FormField
                     id="register-full-name"
                     label="Full Name"
@@ -254,6 +322,12 @@ export default function Register() {
                       </button>
                     </div>
                   </div>
+
+                  {serverError ? (
+                    <p className="text-center text-sm text-[#d15b52] md:text-left">
+                      {serverError}
+                    </p>
+                  ) : null}
 
                   {successMessage ? (
                     <p className="text-center text-sm text-[#2f6f52] md:text-left">

@@ -95,9 +95,7 @@ export default function SlideBooks({
     // วาง slider กลาง section และเผื่อพื้นที่ลูกศรซ้ายขวาให้สมดุลกัน
     <div
       className={`relative mx-auto w-full ${
-        isHeroVariant
-          ? "max-w-[820px] px-4 sm:px-5 lg:px-8"
-          : "max-w-[1100px] px-3 sm:px-6 lg:px-8"
+        isHeroVariant ? "max-w-[820px]" : "max-w-[1100px] px-3 sm:px-6 lg:px-8"
       }`}
     >
       {canScrollLeft && (
