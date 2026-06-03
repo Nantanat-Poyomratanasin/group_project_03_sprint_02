@@ -5,7 +5,7 @@ import NavBar from "../components/HomeComponents/NavBar"
 import Footer from "../components/HomeComponents/Footer"
 import { useCart } from "../context/CartContext"
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api"
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api"
 const SHIPPING = 50
 
 function toNumber(value) {
