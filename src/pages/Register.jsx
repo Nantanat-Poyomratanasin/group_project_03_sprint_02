@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 
 // ตอนพัฒนา local ตอนนี้ backend ฝั่ง group ใช้ base URL นี้อยู่
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL =
+  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
 
 function validateRegisterForm(formData) {
   // errors จะเก็บข้อความ error ของแต่ละ field
