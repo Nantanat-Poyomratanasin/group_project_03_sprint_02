@@ -4,7 +4,7 @@ import { DataGrid, GridRowModes } from "@mui/x-data-grid";
 // ==========================================
 // 1. API CLIENT & CONFIGURATION
 // ==========================================
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; ;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const apiClient = {
   get: async (endpoint) => {
@@ -292,7 +292,7 @@ export function ProductCatalogTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/products", payload);
-        savedRow = { ...response, id: response._id };
+        savedRow = { ...response, id: response._id || response.id };
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -349,6 +349,7 @@ export function ProductCatalogTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
@@ -524,7 +525,7 @@ export function UserCatalogTable() {
         const response = await apiClient.post("/users", payload);
         savedRow = {
           ...response,
-          id: response._id,
+          id: response._id || response.id,
           address_province: response.address?.province || "",
           address_country: response.address?.country || "",
         };
@@ -589,6 +590,7 @@ export function UserCatalogTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
@@ -607,11 +609,6 @@ export function UserCatalogTable() {
 // ==========================================
 // 5. ORDER MANAGEMENT TABLE
 // ==========================================
-
-// ==========================================
-// 5. ORDER MANAGEMENT TABLE
-// ==========================================
-
 export function OrderManagementTable() {
   const [rows, setRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -795,7 +792,7 @@ export function OrderManagementTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/orders", payload);
-        savedRow = { ...response, id: response._id };
+        savedRow = { ...response, id: response._id || response.id };
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -852,6 +849,7 @@ export function OrderManagementTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
@@ -1020,7 +1018,7 @@ export function CouponCodeTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/coupons", payload);
-        savedRow = { ...response, id: response._id };
+        savedRow = { ...response, id: response._id || response.id };
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -1077,6 +1075,7 @@ export function CouponCodeTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
@@ -1201,7 +1200,7 @@ export function FeedbackTable() {
         payload.updatedAt = new Date().toISOString();
 
         const response = await apiClient.post("/feedback", payload);
-        savedRow = { ...response, id: response._id };
+        savedRow = { ...response, id: response._id || response.id };
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -1260,6 +1259,7 @@ export function FeedbackTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
