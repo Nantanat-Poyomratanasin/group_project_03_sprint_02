@@ -171,10 +171,10 @@ export default function PaymentPage({ onBackToHome }) {
       const payload = await apiRequest("/orders", {
         method: "POST",
         body: JSON.stringify({
+          user_id: user.id || user._id,
           total_amount: total,
           status: "paid",
           order_item: cartItems.map((item) => ({
-            user_id: user.id || user._id,
             book_id: item.id,
             book_name: item.name,
             author: item.author,
@@ -185,7 +185,7 @@ export default function PaymentPage({ onBackToHome }) {
             discountPercent: item.discountPercent,
           })),
         }),
-      })
+      });
 
       clearCart()
       setOrderNumber(payload.data?._id ?? "Order created")
