@@ -4,17 +4,22 @@ import { DataGrid, GridRowModes } from "@mui/x-data-grid";
 // ==========================================
 // 1. API CLIENT & CONFIGURATION
 // ==========================================
-const API_BASE_URL = "http://localhost:3002/api";
+const API_BASE_URL =
+  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
 
 const apiClient = {
   get: async (endpoint) => {
-    const res = await fetch(`${API_BASE_URL}${endpoint}`);
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: "GET",
+      credentials: "include", // Send cookies with request
+    });
     if (!res.ok) throw new Error(`GET ${endpoint} failed`);
     return res.json();
   },
   post: async (endpoint, data) => {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: "POST",
+      credentials: "include", // Send cookies with request
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
@@ -24,6 +29,7 @@ const apiClient = {
   put: async (endpoint, data) => {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: "PUT",
+      credentials: "include", // Send cookies with request
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
@@ -33,6 +39,7 @@ const apiClient = {
   delete: async (endpoint) => {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: "DELETE",
+      credentials: "include", // Send cookies with request
     });
     if (!res.ok) throw new Error(`DELETE ${endpoint} failed`);
     return true;
@@ -338,7 +345,7 @@ export function ProductCatalogTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
@@ -578,7 +585,7 @@ export function UserCatalogTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
@@ -601,6 +608,11 @@ export function UserCatalogTable() {
 // ==========================================
 // 5. ORDER MANAGEMENT TABLE
 // ==========================================
+
+// ==========================================
+// 5. ORDER MANAGEMENT TABLE
+// ==========================================
+
 export function OrderManagementTable() {
   const [rows, setRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -630,13 +642,22 @@ export function OrderManagementTable() {
   }, []);
 
   const columns = [
-    { field: "id", headerName: "Order ID", minWidth: 100, flex: 1 },
+    {
+      field: "id",
+      headerName: "Order ID",
+      minWidth: 100,
+      flex: 1,
+      align: "center",
+      headerAlign: "center",
+    },
     {
       field: "user_id",
       headerName: "User ID",
       minWidth: 100,
       flex: 1,
       editable: true,
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "total_amount",
@@ -645,6 +666,8 @@ export function OrderManagementTable() {
       type: "number",
       editable: true,
       valueGetter: parseDecimal128,
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "status",
@@ -653,14 +676,60 @@ export function OrderManagementTable() {
       editable: true,
       type: "singleSelect",
       valueOptions: ["pending", "paid", "shipped", "completed", "cancelled"],
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "itemCount",
-      headerName: "Items",
-      minwidth: 500,
-      flex: 1,
-      valueGetter: (params) =>
-        params.row.order_item ? params.row.order_item.length : 0,
+      headerName: "Items Count",
+      width: 100,
+      align: "center",
+      headerAlign: "center",
+      valueGetter: (value, row) =>
+        row?.order_item ? row.order_item.length : 0,
+    },
+    {
+      field: "itemslist",
+      headerName: "Items List",
+      minWidth: 350,
+      flex: 2,
+      align: "center",
+      headerAlign: "center",
+      // valueGetter creates a clean string for exporting or searching
+      valueGetter: (value, row) => {
+        if (!row?.order_item || row.order_item.length === 0) return "No items";
+        return row.order_item
+          .map((item) => `${item.book_name} (x${item.quantity})`)
+          .join(", ");
+      },
+      // renderCell formats the UI using Tailwind CSS, aligning in the middle
+      renderCell: (params) => {
+        const items = params.row?.order_item;
+
+        if (!items || items.length === 0) {
+          return (
+            <div className="flex h-full w-full items-center justify-center">
+              <span className="text-gray-400 italic">No items</span>
+            </div>
+          );
+        }
+
+        return (
+          <div className="flex flex-col justify-center items-center h-full py-3 w-full">
+            {items.map((item, index) => (
+              <div
+                key={index}
+                className="text-sm leading-tight mb-1 truncate text-center"
+              >
+                • {item.book_name}{" "}
+                <span className="text-gray-600 font-semibold">
+                  (x{item.quantity})
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+      },
     },
     {
       field: "createdAt",
@@ -668,6 +737,8 @@ export function OrderManagementTable() {
       width: 160,
       type: "dateTime",
       valueGetter: parseDate,
+      align: "center",
+      headerAlign: "center",
     },
   ];
 
@@ -777,7 +848,7 @@ export function OrderManagementTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
@@ -791,6 +862,7 @@ export function OrderManagementTable() {
           rowModesModel={rowModesModel}
           onRowModesModelChange={setRowModesModel}
           processRowUpdate={processRowUpdate}
+          getRowHeight={() => "auto"} // Allows rows to expand vertically for lists
         />
       </div>
     </div>
@@ -1001,7 +1073,7 @@ export function CouponCodeTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
@@ -1184,7 +1256,7 @@ export function FeedbackTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
@@ -1203,4 +1275,3 @@ export function FeedbackTable() {
     </div>
   );
 }
-
