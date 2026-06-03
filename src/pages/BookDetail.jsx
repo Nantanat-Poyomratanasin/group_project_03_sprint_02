@@ -7,7 +7,6 @@ import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
-
 function HeartIcon({ filled }) {
   return (
     <svg
@@ -182,7 +181,7 @@ export default function BookDetail() {
       setBookLoading(true);
       setBookError(null);
       try {
-        const data = await apiFetch(`/producsts/${id}`);
+        const data = await apiFetch(`/products/${id}`);
         if (!cancelled) {
           setBook(data.data || data);
         }
@@ -219,7 +218,7 @@ export default function BookDetail() {
               date: formatDate(r.createdAt),
               rating: Number(r.rating) || 0,
               text: r.review,
-            }))
+            })),
           );
         }
       } catch (err) {
