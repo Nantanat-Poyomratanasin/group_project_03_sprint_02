@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-import { Phone, Headphones, CreditCard } from "lucide-react";
+import { Phone, Headphones, CreditCard, Lock } from "lucide-react";
 
 import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
@@ -13,6 +13,14 @@ export default function SettingsPage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   const [isEditingPayment, setIsEditingPayment] = useState(false);
+
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
@@ -37,8 +45,7 @@ export default function SettingsPage() {
   ========================= */
 
   const initialData = {
-    firstName: "Robert",
-    lastName: "Johnson",
+    fullName: "Robert Johnson",
     username: "Robert.username",
     dob: "1999-09-12",
     email: "Robert.username@gmail.com",
@@ -114,7 +121,7 @@ export default function SettingsPage() {
   const renderProfileField = (label, field, type = "text") => {
     return (
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-semibold text-[#4d3a33]">{label}</label>
+        <label className="text-sm font-bold text-[#4d3a33]">{label}</label>
 
         {isEditingProfile ? (
           <input
@@ -199,11 +206,9 @@ export default function SettingsPage() {
           {/* GRID */}
           <div
             ref={profileRef}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+            className="text-sm grid grid-cols-1 md:grid-cols-2 gap-8"
           >
-            {renderProfileField("First name", "firstName")}
-
-            {renderProfileField("Last name", "lastName")}
+            {renderProfileField("Full Name", "fullName")}
 
             {renderProfileField("Username", "username")}
 
@@ -212,15 +217,28 @@ export default function SettingsPage() {
             {renderProfileField("Email", "email")}
 
             {renderProfileField("Phone", "phone")}
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-bold text-[#4d3a33]">
+                Password
+              </label>
+
+              <button
+                onClick={() => setIsPasswordModalOpen(true)}
+                className="w-full bg-white rounded-full px-4 py-2 border border-[#eee3de] text-[#b67662] hover:bg-[#f3e4df] transition text-center font-bold"
+              >
+                Change Password
+              </button>
+            </div>
           </div>
 
           {/* =========================
               SHIPPING ADDRESS
           ========================= */}
 
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-semibold text-[#4d3a33]">
+          <div className="mt-10">
+            <div className="flex justify-between items-center mb-4">
+              <label className="text-xl font-bold text-[#4d3a33]">
                 Shipping Address
               </label>
 
@@ -244,7 +262,9 @@ export default function SettingsPage() {
           <div className="mt-10">
             {/* HEADER */}
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-[#4d3a33]">Payment Method</h3>
+              <h3 className="text-xl font-bold text-[#4d3a33]">
+                Payment Method
+              </h3>
 
               {!isEditingPayment ? (
                 <button
@@ -419,13 +439,14 @@ export default function SettingsPage() {
         ========================= */}
 
         <section>
-          <h2 className="text-4xl font-bold text-[#2f1f1b] mb-8">
+          <h2 className="text-xl font-bold text-[#2f1f1b] mb-8">
             Customer Service
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex justify-center">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> */}
             {/* FEEDBACK */}
-            <div className="bg-white rounded-[30px] p-10 flex flex-col items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+            <div className="bg-white rounded-[30px] w-[560px] p-10 flex flex-col items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
               <Headphones size={70} />
 
               <button
@@ -437,13 +458,13 @@ export default function SettingsPage() {
             </div>
 
             {/* CALL CENTER */}
-            <div className="bg-white rounded-[30px] p-10 flex flex-col items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+            {/* <div className="bg-white rounded-[30px] p-10 flex flex-col items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
               <Phone size={70} />
 
               <button className="mt-6 px-6 py-2 bg-[#b67662] text-white rounded-full hover:bg-[#9f6453] transition">
                 Call center
               </button>
-            </div>
+            </div> */}
           </div>
 
           {/* LOGOUT */}
@@ -700,6 +721,101 @@ export default function SettingsPage() {
               <button
                 onClick={() => setIsFeedbackOpen(false)}
                 className="px-10 py-2.5 border border-[#b67662] text-[#b67662] rounded-full hover:bg-[#f3e4df] transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================
+    PASSWORD MODAL
+========================= */}
+
+      {isPasswordModalOpen && (
+        <div
+          onClick={() => setIsPasswordModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm px-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#FAF8F7] rounded-[36px] w-[82%] max-w-[560px] p-7 relative"
+          >
+            {/* CLOSE */}
+            <button
+              onClick={() => setIsPasswordModalOpen(false)}
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              ×
+            </button>
+
+            {/* TITLE */}
+            <div className="flex items-center gap-3 mb-6">
+              <Lock size={28} />
+              <h2 className="text-2xl font-bold text-[#2f1f1b]">
+                Change Password
+              </h2>
+            </div>
+
+            {/* FORM */}
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder="Current Password"
+                value={passwordData.currentPassword}
+                onChange={(e) =>
+                  setPasswordData((prev) => ({
+                    ...prev,
+                    currentPassword: e.target.value,
+                  }))
+                }
+                className="w-full border border-[#d9a99a] rounded-xl px-4 py-2"
+              />
+
+              <input
+                type="password"
+                placeholder="New Password"
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  setPasswordData((prev) => ({
+                    ...prev,
+                    newPassword: e.target.value,
+                  }))
+                }
+                className="w-full border border-[#d9a99a] rounded-xl px-4 py-2"
+              />
+
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData((prev) => ({
+                    ...prev,
+                    confirmPassword: e.target.value,
+                  }))
+                }
+                className="w-full border border-[#d9a99a] rounded-xl px-4 py-2"
+              />
+            </div>
+
+            {/* BUTTONS */}
+            <div className="flex justify-center gap-4 mt-8">
+              <button
+                onClick={() => {
+                  console.log(passwordData);
+
+                  setIsPasswordModalOpen(false);
+                }}
+                className="px-10 py-2.5 bg-[#b67662] text-white rounded-full hover:bg-[#9f6453]"
+              >
+                Save
+              </button>
+
+              <button
+                onClick={() => setIsPasswordModalOpen(false)}
+                className="px-10 py-2.5 border border-[#b67662] text-[#b67662] rounded-full hover:bg-[#f3e4df]"
               >
                 Cancel
               </button>

@@ -5,6 +5,7 @@ import {
   UserCatalogTable,
   OrderManagementTable,
   CouponCodeTable,
+  FeedbackTable
 } from "./TableGrid";
 import { useState } from "react";
 
@@ -25,6 +26,7 @@ export default function Admin() {
         {activeTab === "User Catalog" && <UserCatalogTable />}
         {activeTab === "Order management" && <OrderManagementTable />}
         {activeTab === "Coupon code" && <CouponCodeTable />}
+        {activeTab === "Feedbacks" && <FeedbackTable />}
       </main>
     </div>
   );

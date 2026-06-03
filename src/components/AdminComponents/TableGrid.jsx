@@ -4,17 +4,22 @@ import { DataGrid, GridRowModes } from "@mui/x-data-grid";
 // ==========================================
 // 1. API CLIENT & CONFIGURATION
 // ==========================================
-const API_BASE_URL = "http://localhost:3002/api";
+const API_BASE_URL =
+  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
 
 const apiClient = {
   get: async (endpoint) => {
-    const res = await fetch(`${API_BASE_URL}${endpoint}`);
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: "GET",
+      credentials: "include", // Send cookies with request
+    });
     if (!res.ok) throw new Error(`GET ${endpoint} failed`);
     return res.json();
   },
   post: async (endpoint, data) => {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: "POST",
+      credentials: "include", // Send cookies with request
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
@@ -24,6 +29,7 @@ const apiClient = {
   put: async (endpoint, data) => {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: "PUT",
+      credentials: "include", // Send cookies with request
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
@@ -33,6 +39,7 @@ const apiClient = {
   delete: async (endpoint) => {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: "DELETE",
+      credentials: "include", // Send cookies with request
     });
     if (!res.ok) throw new Error(`DELETE ${endpoint} failed`);
     return true;
@@ -338,7 +345,7 @@ export function ProductCatalogTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
@@ -578,7 +585,7 @@ export function UserCatalogTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
@@ -601,6 +608,11 @@ export function UserCatalogTable() {
 // ==========================================
 // 5. ORDER MANAGEMENT TABLE
 // ==========================================
+
+// ==========================================
+// 5. ORDER MANAGEMENT TABLE
+// ==========================================
+
 export function OrderManagementTable() {
   const [rows, setRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -630,13 +642,22 @@ export function OrderManagementTable() {
   }, []);
 
   const columns = [
-    { field: "id", headerName: "Order ID", minWidth: 100, flex: 1 },
+    {
+      field: "id",
+      headerName: "Order ID",
+      minWidth: 100,
+      flex: 1,
+      align: "center",
+      headerAlign: "center",
+    },
     {
       field: "user_id",
       headerName: "User ID",
       minWidth: 100,
       flex: 1,
       editable: true,
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "total_amount",
@@ -645,6 +666,8 @@ export function OrderManagementTable() {
       type: "number",
       editable: true,
       valueGetter: parseDecimal128,
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "status",
@@ -653,14 +676,60 @@ export function OrderManagementTable() {
       editable: true,
       type: "singleSelect",
       valueOptions: ["pending", "paid", "shipped", "completed", "cancelled"],
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "itemCount",
-      headerName: "Items",
-      minwidth: 500,
-      flex: 1,
-      valueGetter: (params) =>
-        params.row.order_item ? params.row.order_item.length : 0,
+      headerName: "Items Count",
+      width: 100,
+      align: "center",
+      headerAlign: "center",
+      valueGetter: (value, row) =>
+        row?.order_item ? row.order_item.length : 0,
+    },
+    {
+      field: "itemslist",
+      headerName: "Items List",
+      minWidth: 350,
+      flex: 2,
+      align: "center",
+      headerAlign: "center",
+      // valueGetter creates a clean string for exporting or searching
+      valueGetter: (value, row) => {
+        if (!row?.order_item || row.order_item.length === 0) return "No items";
+        return row.order_item
+          .map((item) => `${item.book_name} (x${item.quantity})`)
+          .join(", ");
+      },
+      // renderCell formats the UI using Tailwind CSS, aligning in the middle
+      renderCell: (params) => {
+        const items = params.row?.order_item;
+
+        if (!items || items.length === 0) {
+          return (
+            <div className="flex h-full w-full items-center justify-center">
+              <span className="text-gray-400 italic">No items</span>
+            </div>
+          );
+        }
+
+        return (
+          <div className="flex flex-col justify-center items-center h-full py-3 w-full">
+            {items.map((item, index) => (
+              <div
+                key={index}
+                className="text-sm leading-tight mb-1 truncate text-center"
+              >
+                • {item.book_name}{" "}
+                <span className="text-gray-600 font-semibold">
+                  (x{item.quantity})
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+      },
     },
     {
       field: "createdAt",
@@ -668,6 +737,8 @@ export function OrderManagementTable() {
       width: 160,
       type: "dateTime",
       valueGetter: parseDate,
+      align: "center",
+      headerAlign: "center",
     },
   ];
 
@@ -777,7 +848,7 @@ export function OrderManagementTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
@@ -791,6 +862,7 @@ export function OrderManagementTable() {
           rowModesModel={rowModesModel}
           onRowModesModelChange={setRowModesModel}
           processRowUpdate={processRowUpdate}
+          getRowHeight={() => "auto"} // Allows rows to expand vertically for lists
         />
       </div>
     </div>
@@ -1001,7 +1073,190 @@ export function CouponCodeTable() {
         canRemove={selectedRows.ids.size > 0}
         isEditing={isEditing}
       />
-      <div className="flex-grow w-full">
+      <div className="grow w-full">
+        <DataGrid
+          loading={isLoading}
+          rows={rows}
+          columns={columns}
+          checkboxSelection
+          disableRowSelectionOnClick
+          sx={dataGridStyles}
+          rowSelectionModel={selectedRows}
+          onRowSelectionModelChange={handleSelectionChange}
+          editMode="row"
+          rowModesModel={rowModesModel}
+          onRowModesModelChange={setRowModesModel}
+          processRowUpdate={processRowUpdate}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 7. FEEDBACK TABLE
+// ==========================================
+export function FeedbackTable() {
+  const [rows, setRows] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rowModesModel, setRowModesModel] = useState({});
+  const [selectedRows, setSelectedRows] = useState({
+    type: "include",
+    ids: new Set(),
+  });
+
+  useEffect(() => {
+    setIsLoading(true);
+    apiClient
+      .get("/feedback")
+      .then((response) => {
+        const actualData = Array.isArray(response)
+          ? response
+          : response?.data || [];
+        setRows(
+          actualData.map((item) => ({ ...item, id: item._id || item.id })),
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        setRows([]);
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const columns = [
+    { field: "id", headerName: "Feedback ID", width: 220 },
+    {
+      field: "user_id",
+      headerName: "User ID",
+      width: 220,
+      editable: true,
+    },
+    {
+      field: "message",
+      headerName: "Message",
+      minWidth: 300,
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: "createdAt",
+      headerName: "Created At",
+      width: 180,
+      type: "dateTime",
+      valueGetter: parseDate,
+    },
+    {
+      field: "updatedAt",
+      headerName: "Updated At",
+      width: 180,
+      type: "dateTime",
+      valueGetter: parseDate,
+    },
+  ];
+
+  const handleAdd = () => {
+    const newId = `temp-${Date.now()}`;
+    const newRow = {
+      id: newId,
+      user_id: "",
+      message: "New feedback message",
+      isNew: true,
+    };
+    setRows((oldRows) => [newRow, ...oldRows]);
+    setSelectedRows({ type: "include", ids: new Set([newId]) });
+    setRowModesModel({
+      [newId]: { mode: GridRowModes.Edit, fieldToFocus: "user_id" },
+    });
+  };
+
+  const handleSelectionChange = (newSelectionModel) => {
+    setSelectedRows(newSelectionModel);
+    const ids = Array.from(newSelectionModel.ids);
+    setRowModesModel(
+      ids.length === 1 ? { [ids[0]]: { mode: GridRowModes.Edit } } : {},
+    );
+  };
+
+  const handleEditOrSave = () => {
+    const ids = Array.from(selectedRows.ids);
+    if (ids.length !== 1) return;
+    const isEditing = rowModesModel[ids[0]]?.mode === GridRowModes.Edit;
+    setRowModesModel({
+      ...rowModesModel,
+      [ids[0]]: { mode: isEditing ? GridRowModes.View : GridRowModes.Edit },
+    });
+  };
+
+  const processRowUpdate = async (newRow, oldRow) => {
+    const isNew = newRow.isNew;
+    const payload = { ...newRow };
+    delete payload.isNew;
+    if (isNew) delete payload.id;
+
+    try {
+      let savedRow;
+      if (isNew) {
+        // Automatically set dates on creation if backend doesn't handle it immediately
+        payload.createdAt = new Date().toISOString();
+        payload.updatedAt = new Date().toISOString();
+
+        const response = await apiClient.post("/feedback", payload);
+        savedRow = { ...response, id: response._id };
+        setRows((prevRows) => [
+          ...prevRows.filter((r) => r.id !== newRow.id),
+          savedRow,
+        ]);
+      } else {
+        const updateId = payload._id || payload.id;
+        payload.updatedAt = new Date().toISOString();
+
+        const response = await apiClient.put(`/feedback/${updateId}`, payload);
+        savedRow = { ...response, id: response._id || response.id };
+        setRows((prevRows) =>
+          prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
+        );
+      }
+      return savedRow;
+    } catch (error) {
+      console.error(error);
+      return oldRow;
+    }
+  };
+
+  const handleRemove = async () => {
+    try {
+      await Promise.all(
+        Array.from(selectedRows.ids).map((id) => {
+          const actualId = rows.find((r) => r.id === id)?._id || id;
+          return apiClient.delete(`/feedback/${actualId}`);
+        }),
+      );
+      setRows((prevRows) =>
+        prevRows.filter((row) => !selectedRows.ids.has(row.id)),
+      );
+      setSelectedRows({ type: "include", ids: new Set() });
+      setRowModesModel({});
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const isEditing =
+    Array.from(selectedRows.ids).length === 1 &&
+    rowModesModel[Array.from(selectedRows.ids)[0]]?.mode === GridRowModes.Edit;
+
+  return (
+    <div className="w-full h-[500px] p-6 bg-gray-50 flex flex-col">
+      <TableActions
+        onAdd={handleAdd}
+        onEditOrSave={handleEditOrSave}
+        onRemove={handleRemove}
+        canEdit={selectedRows.ids.size === 1}
+        canRemove={selectedRows.ids.size > 0}
+        isEditing={isEditing}
+      />
+      <div className="grow w-full">
         <DataGrid
           loading={isLoading}
           rows={rows}
