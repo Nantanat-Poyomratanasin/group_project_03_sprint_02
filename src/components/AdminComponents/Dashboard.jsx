@@ -4,8 +4,7 @@ import * as d3 from "d3";
 // ==========================================
 // 1. API CONFIG & HELPERS
 // ==========================================
-const API_BASE_URL =
-  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const apiClient = {
   get: async (endpoint) => {

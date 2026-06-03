@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { Rating } from "@mui/material";
 import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
-import { bookData } from "../mock-data/bookData";
-import { reviewData } from "../mock-data/reviewData";
+import { apiFetch } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
-const currentUser = { name: "You" };
 
 function HeartIcon({ filled }) {
   return (
@@ -34,13 +34,13 @@ function Avatar({ name }) {
   );
 }
 
-function WriteReviewForm({ onSubmit }) {
+function WriteReviewForm({ onSubmit, isSubmitting }) {
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (rating === 0) {
       setError("Please select a star rating.");
@@ -51,11 +51,15 @@ function WriteReviewForm({ onSubmit }) {
       return;
     }
     setError("");
-    onSubmit({ rating, text: text.trim() });
-    setSubmitted(true);
-    setRating(0);
-    setText("");
-    setTimeout(() => setSubmitted(false), 3000);
+    try {
+      await onSubmit({ rating, text: text.trim() });
+      setSubmitted(true);
+      setRating(0);
+      setText("");
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch (err) {
+      setError(err.message || "Failed to submit review.");
+    }
   }
 
   return (
@@ -116,10 +120,11 @@ function WriteReviewForm({ onSubmit }) {
           <div className="flex justify-center">
             <button
               type="submit"
-              className="px-10 py-2.5 rounded-full text-white text-sm font-semibold transition-opacity hover:opacity-90"
+              disabled={isSubmitting}
+              className="px-10 py-2.5 rounded-full text-white text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
               style={{ backgroundColor: "#A66858" }}
             >
-              Submit Review
+              {isSubmitting ? "Submitting..." : "Submit Review"}
             </button>
           </div>
         </form>
@@ -136,53 +141,253 @@ function formatDate(date) {
   });
 }
 
+// แปลง price ที่อาจเป็น MongoDB Decimal128 เป็น number
+function parsePrice(price) {
+  if (price == null) return 0;
+  if (typeof price === "number") return price;
+  if (typeof price === "object" && price.$numberDecimal) {
+    return parseFloat(price.$numberDecimal);
+  }
+  return parseFloat(price) || 0;
+}
+
 export default function BookDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, isLoggedIn, isLoading: authLoading } = useAuth();
+  const { addToCart } = useCart();
+
+  // Book state
+  const [book, setBook] = useState(null);
+  const [bookLoading, setBookLoading] = useState(true);
+  const [bookError, setBookError] = useState(null);
+
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+
+  // Favorite state
   const [liked, setLiked] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  // Cart state
   const [cartAdded, setCartAdded] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // ดึงข้อมูลหนังสือจาก mock-data โดยใช้ id จาก URL
-  const book = bookData.find((b) => b.id === parseInt(id));
+  // ---------- โหลดหนังสือ 1 เล่ม (API first, fallback mock) ----------
+  useEffect(() => {
+    let cancelled = false;
 
-  // ถ้าไม่เจอหนังสือ redirect ไปหน้าแรก
-  if (!book) {
+    async function fetchBook() {
+      setBookLoading(true);
+      setBookError(null);
+      try {
+        const data = await apiFetch(`/producsts/${id}`);
+        if (!cancelled) {
+          setBook(data.data || data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setBookError(err.message || "Book not found");
+        }
+      } finally {
+        if (!cancelled) setBookLoading(false);
+      }
+    }
+
+    fetchBook();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  // ---------- โหลด reviews (API first, fallback mock) ----------
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchReviews() {
+      setReviewsLoading(true);
+      try {
+        const data = await apiFetch(`/reviews/${id}`);
+        // backend ตอบ review list ใน field "message"
+        const reviewList = data.message || data.data || [];
+        if (!cancelled) {
+          setReviews(
+            reviewList.map((r) => ({
+              id: r._id,
+              name: r.user_id?.username || "Anonymous",
+              date: formatDate(r.createdAt),
+              rating: Number(r.rating) || 0,
+              text: r.review,
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("Failed to fetch reviews:", err);
+        if (!cancelled) {
+          setReviews([]);
+        }
+      } finally {
+        if (!cancelled) setReviewsLoading(false);
+      }
+    }
+
+    fetchReviews();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  // ---------- เช็ค favorite ถ้า login แล้ว ----------
+  useEffect(() => {
+    if (!isLoggedIn || authLoading) return;
+    let cancelled = false;
+
+    async function checkFavorite() {
+      try {
+        const data = await apiFetch("/favorites");
+        const items = data.data?.favorite_items || [];
+        if (!cancelled) {
+          setLiked(items.some((item) => item.book_id === id));
+        }
+      } catch {
+        // 404 = ยังไม่เคยมี favorite document
+        if (!cancelled) setLiked(false);
+      }
+    }
+
+    checkFavorite();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isLoggedIn, authLoading]);
+
+  // ---------- toggle favorite ----------
+  const handleToggleLike = useCallback(async () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+    setFavoriteLoading(true);
+    try {
+      await apiFetch(`/favorites/${id}`, { method: "POST" });
+      setLiked((prev) => !prev);
+    } catch (err) {
+      console.error("Favorite toggle failed:", err.message);
+    } finally {
+      setFavoriteLoading(false);
+    }
+  }, [id, isLoggedIn, navigate]);
+
+  // ---------- add to cart ----------
+  const handleAddToCart = useCallback(async () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    const price = parsePrice(book?.price);
+
+    try {
+      await apiFetch("/cart", {
+        method: "POST",
+        body: {
+          user_id: user._id,
+          total_amount: price,
+          status: "active",
+          cart_item: [
+            {
+              book_id: book._id,
+              book_name: book.book_name,
+              author: book.author,
+              quantity: 1,
+              price: price,
+              img_link: book.img_link,
+            },
+          ],
+        },
+      });
+
+      // update local CartContext ให้ badge navbar เพิ่มทันที
+      addToCart({
+        id: book._id,
+        name: book.book_name,
+        author: book.author,
+        price: price,
+        img: book.img_link,
+      });
+
+      setCartAdded(true);
+      setTimeout(() => setCartAdded(false), 2000);
+    } catch (err) {
+      console.error("Add to cart failed:", err.message);
+    }
+  }, [book, user, isLoggedIn, navigate, addToCart]);
+
+  // ---------- submit review ----------
+  async function handleSubmitReview({ rating, text }) {
+    setReviewSubmitting(true);
+    try {
+      await apiFetch("/reviews", {
+        method: "POST",
+        body: {
+          rating,
+          review: text,
+          user_id: user._id,
+          book_id: id,
+        },
+      });
+
+      // เพิ่ม review ใหม่ลง list ทันทีโดยไม่ต้อง refetch
+      const newReview = {
+        id: Date.now(),
+        name: user.username || "You",
+        date: formatDate(new Date()),
+        rating,
+        text,
+      };
+      setReviews((prev) => [newReview, ...prev]);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }
+
+  // ---------- Loading / Error states ----------
+  if (bookLoading || authLoading) {
+    return (
+      <div
+        className="min-h-screen flex flex-col"
+        style={{ backgroundColor: "#FAF4F1" }}
+      >
+        <NavBar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div
+              className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin mx-auto"
+              style={{ borderColor: "#A66858", borderTopColor: "transparent" }}
+            />
+            <p className="text-sm" style={{ color: "#8b7355" }}>
+              Loading book details...
+            </p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (bookError || !book) {
     return <Navigate to="/" replace />;
   }
 
-  // ดึง reviews ของหนังสือเล่มนี้
-  const initialReviews = reviewData
-    .filter((r) => r.book_id === book.id)
-    .map((r) => ({
-      id: r.id,
-      name: r.customer_name,
-      date: formatDate(r.created_at),
-      rating: r.rating,
-      text: r.review,
-    }));
-
-  const [reviews, setReviews] = useState(initialReviews);
-
-  function handleAddToCart() {
-    setCartAdded(true);
-    setTimeout(() => setCartAdded(false), 2000);
-  }
-
-  function handleSubmitReview({ rating, text }) {
-    const newReview = {
-      id: Date.now(),
-      name: currentUser.name,
-      date: formatDate(new Date()),
-      rating,
-      text,
-    };
-    setReviews((prev) => [newReview, ...prev]);
-  }
+  // ---------- แปลงค่าที่อาจเป็น format แปลก ----------
+  const rating = Number(book.rating) || 0;
+  const price = parsePrice(book.price);
 
   // สร้าง description ถ้าไม่มี
   const description =
     book.description ||
-    `Discover "${book.name}" by ${book.author}, a captivating ${book.category} book published by ${book.publisher}. This ${book.pages}-page masterpiece in ${book.language} offers readers an unforgettable journey through its compelling narrative and insightful perspectives.`;
+    `Discover "${book.book_name}" by ${book.author}, a captivating ${book.category} book published by ${book.publisher}. This ${book.page}-page masterpiece in ${book.language} offers readers an unforgettable journey through its compelling narrative and insightful perspectives.`;
 
   return (
     <div
@@ -197,10 +402,10 @@ export default function BookDetail() {
             {/* Cover */}
             <div className="flex flex-col items-center gap-4 shrink-0">
               <div className="w-48 h-64 rounded-lg overflow-hidden shadow-md">
-                {book.img ? (
+                {book.img_link ? (
                   <img
-                    src={book.img}
-                    alt={book.name}
+                    src={book.img_link}
+                    alt={book.book_name}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -209,14 +414,15 @@ export default function BookDetail() {
                     style={{ backgroundColor: "#1e3a8a" }}
                   >
                     <span className="text-white text-center font-bold text-base px-4 leading-snug">
-                      {book.name}
+                      {book.book_name}
                     </span>
                   </div>
                 )}
               </div>
               <button
-                onClick={() => setLiked((l) => !l)}
-                className="flex items-center gap-2 px-8 py-2 rounded-full border text-sm transition-colors"
+                onClick={handleToggleLike}
+                disabled={favoriteLoading}
+                className="flex items-center gap-2 px-8 py-2 rounded-full border text-sm transition-colors disabled:opacity-50"
                 style={{
                   borderColor: liked ? "#A66858" : "#d4c4b4",
                   color: liked ? "#A66858" : "#8b7355",
@@ -224,7 +430,7 @@ export default function BookDetail() {
                 }}
               >
                 <HeartIcon filled={liked} />
-                Like
+                {liked ? "Liked" : "Like"}
               </button>
             </div>
 
@@ -240,14 +446,14 @@ export default function BookDetail() {
                 className="text-2xl font-bold mb-0.5 font-['Playfair_Display']"
                 style={{ color: "#2c1810" }}
               >
-                {book.name}
+                {book.book_name}
               </h1>
               <p className="text-sm mb-3" style={{ color: "#8b7355" }}>
                 by {book.author}
               </p>
               <div className="flex items-center gap-2 mb-4">
                 <Rating
-                  value={book.rating}
+                  value={rating}
                   precision={0.1}
                   readOnly
                   sx={{
@@ -260,7 +466,7 @@ export default function BookDetail() {
                   className="text-sm font-semibold"
                   style={{ color: "#2c1810" }}
                 >
-                  {book.rating.toFixed(1)}
+                  {rating.toFixed(1)}
                 </span>
               </div>
               <p
@@ -273,7 +479,7 @@ export default function BookDetail() {
                 className="text-3xl font-bold mb-4 font-['Playfair_Display']"
                 style={{ color: "#A66858" }}
               >
-                {book.price.toLocaleString("th-TH", {
+                {price.toLocaleString("th-TH", {
                   minimumFractionDigits: 2,
                 })}{" "}
                 THB
@@ -297,7 +503,7 @@ export default function BookDetail() {
                 Pages
               </span>
               <span className="font-bold text-sm" style={{ color: "#2c1810" }}>
-                {book.pages}
+                {book.page || "—"}
               </span>
             </div>
             <div className="flex-1 flex flex-col items-center gap-1">
@@ -305,7 +511,7 @@ export default function BookDetail() {
                 Language
               </span>
               <span className="font-bold text-sm" style={{ color: "#2c1810" }}>
-                {book.language}
+                {book.language || "—"}
               </span>
             </div>
             <div className="flex-1 flex flex-col items-center gap-1">
@@ -313,7 +519,7 @@ export default function BookDetail() {
                 Publisher
               </span>
               <span className="font-bold text-sm" style={{ color: "#2c1810" }}>
-                {book.publisher}
+                {book.publisher || "—"}
               </span>
             </div>
           </div>
@@ -321,7 +527,10 @@ export default function BookDetail() {
 
         {/* Review section — login prompt OR write form */}
         {isLoggedIn ? (
-          <WriteReviewForm onSubmit={handleSubmitReview} />
+          <WriteReviewForm
+            onSubmit={handleSubmitReview}
+            isSubmitting={reviewSubmitting}
+          />
         ) : (
           <div
             className="rounded-2xl px-6 py-4 text-center text-sm"
@@ -333,7 +542,7 @@ export default function BookDetail() {
           >
             <button
               className="underline hover:opacity-80"
-              onClick={() => setIsLoggedIn(true)}
+              onClick={() => navigate("/login")}
             >
               Please log in
             </button>{" "}
@@ -350,7 +559,13 @@ export default function BookDetail() {
             Customer Reviews
           </h2>
           <div className="space-y-3">
-            {reviews.length > 0 ? (
+            {reviewsLoading ? (
+              <div className="bg-white rounded-2xl px-5 py-8 shadow-sm text-center">
+                <p className="text-sm" style={{ color: "#9b8b7a" }}>
+                  Loading reviews...
+                </p>
+              </div>
+            ) : reviews.length > 0 ? (
               reviews.map((review) => (
                 <div
                   key={review.id}
