@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 // base URL ของ backend ที่ใช้กับ auth ทั้ง login / logout / get profile
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL =
+  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
 // key นี้ใช้เก็บ email ล่าสุดใน localStorage แบบช่วยจำ ไม่ใช่ token หลัก
 const AUTH_EMAIL_KEY = "readlyUserEmail";
 
@@ -110,6 +111,9 @@ export function AuthProvider({ children }) {
       isLoading,
       // แปลง user เป็น true/false ที่หน้าอื่นเอาไปใช้ได้ง่าย
       isAuthenticated: Boolean(user),
+      // เพิ่ม isAdmin โดยใช้ Optional Chaining (?.) เพื่อป้องกันแอปพังกรณีที่ user เป็น null
+      // (สามารถเปลี่ยนค่า "admin" เป็นค่าอื่นตามที่ backend กำหนดไว้ได้ เช่น "ADMIN" หรือ 1)
+      isAdmin: user?.role === "admin",
       login,
       logout,
       getMe,
