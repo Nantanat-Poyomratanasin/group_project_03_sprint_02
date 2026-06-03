@@ -19,6 +19,25 @@ export async function createCart(cartData) {
   return result.data;
 }
 
+export async function updateCart(cartId, cartData) {
+  const response = await fetch(`${API_URL}/cart/${cartId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(cartData),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Update cart failed");
+  }
+
+  return result.data;
+}
+
 export async function getCartByUserId(userId) {
   const response = await fetch(`${API_URL}/cart/${userId}`, {
     method: "GET",

@@ -1,5 +1,5 @@
 ﻿import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { createCart, getCartByUserId } from "../Api/CartApi";
+import { createCart, getCartByUserId, updateCart } from "../Api/CartApi";
 
 const CART_STORAGE_KEY = "readly-cart-items";
 const FALLBACK_BOOK_OBJECT_ID = "685abc123456789012345679";
@@ -19,6 +19,15 @@ function readStoredCart() {
   }
 }
 
+function toNumber(value) {
+  if (value == null) return 0;
+  if (typeof value === "number") return value;
+  if (typeof value === "object" && "$numberDecimal" in value) {
+    return Number(value.$numberDecimal);
+  }
+  return Number(value) || 0;
+}
+
 function mapBackendCartToCartItems(cartFromBackend) {
   return cartFromBackend.flatMap((cart) =>
     cart.cart_item.map((item) => ({
@@ -26,7 +35,7 @@ function mapBackendCartToCartItems(cartFromBackend) {
       cartId: cart._id,
       name: item.book_name,
       author: item.author,
-      price: Number(item.price),
+      price: toNumber(item.price),
       img: item.img_link,
       quantity: item.quantity,
     })),
@@ -36,7 +45,7 @@ function mapBackendCartToCartItems(cartFromBackend) {
 function buildCartData(book, userId) {
   return {
     user_id: userId,
-    total_amount: Number(book.price),
+    total_amount: toNumber(book.price),
     status: "pending",
     cart_item: [
       {
@@ -44,11 +53,22 @@ function buildCartData(book, userId) {
         book_name: book.name,
         author: book.author,
         quantity: 1,
-        price: Number(book.price),
+        price: toNumber(book.price),
         img_link: book.img,
       },
     ],
   };
+}
+
+function mapCartItemsToBackendCartItems(items) {
+  return items.map((item) => ({
+    book_id: item.id,
+    book_name: item.name,
+    author: item.author,
+    quantity: item.quantity,
+    price: toNumber(item.price),
+    img_link: item.img,
+  }));
 }
 
 function addBookToLocalCart(currentItems, book) {
@@ -66,7 +86,7 @@ function addBookToLocalCart(currentItems, book) {
       id: book.id,
       name: book.name,
       author: book.author,
-      price: book.price,
+      price: toNumber(book.price),
       img: book.img,
       quantity: 1,
     },
@@ -86,8 +106,10 @@ export function CartProvider({ children }) {
       }
 
       const cartFromBackend = await getCartByUserId(userId);
+      const mappedItems = mapBackendCartToCartItems(cartFromBackend);
 
-      console.log(cartFromBackend);
+      setCartItems(mappedItems);
+      console.log(mappedItems);
     }
 
     loadCart();
@@ -110,28 +132,57 @@ export function CartProvider({ children }) {
       await createCart(buildCartData(book, userId));
 
       const cartFromBackend = await getCartByUserId(userId);
-      console.log(cartFromBackend);
+      const mappedItems = mapBackendCartToCartItems(cartFromBackend);
 
-      setCartItems((currentItems) => addBookToLocalCart(currentItems, book));
+      setCartItems(mappedItems);
       setIsCartOpen(true);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const updateQuantity = (bookId, nextQuantity) => {
-    if (nextQuantity <= 0) {
-      setCartItems((currentItems) =>
-        currentItems.filter((item) => item.id !== bookId),
-      );
+  const updateQuantity = async (bookId, nextQuantity) => {
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+      console.error("Please login before updating cart.");
       return;
     }
 
-    setCartItems((currentItems) =>
-      currentItems.map((item) =>
+    const targetItem = cartItems.find((item) => item.id === bookId);
+
+    if (!targetItem) {
+      return;
+    }
+
+    const cartId = targetItem.cartId;
+
+    const itemsInSameCart = cartItems.filter((item) => item.cartId === cartId);
+
+    const nextItems = itemsInSameCart
+      .map((item) =>
         item.id === bookId ? { ...item, quantity: nextQuantity } : item,
-      ),
+      )
+      .filter((item) => item.quantity > 0);
+
+    const totalAmount = nextItems.reduce(
+      (sum, item) => sum + toNumber(item.price) * item.quantity,
+      0,
     );
+
+    try {
+      await updateCart(cartId, {
+        total_amount: totalAmount,
+        cart_item: mapCartItemsToBackendCartItems(nextItems),
+      });
+
+      const cartFromBackend = await getCartByUserId(userId);
+      const mappedItems = mapBackendCartToCartItems(cartFromBackend);
+
+      setCartItems(mappedItems);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const removeFromCart = (bookId) => {
