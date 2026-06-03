@@ -11,11 +11,14 @@ import { Link, useNavigate } from "react-router-dom";
 const API_BASE_URL = "http://localhost:3000/api";
 
 function validateRegisterForm(formData) {
+  // errors จะเก็บข้อความ error ของแต่ละ field
   const errors = {};
+  // trim() เอา space หน้า-หลังออกก่อน validate
   const trimmedUsername = formData.username.trim();
   const trimmedFullName = formData.fullName.trim();
   const trimmedEmail = formData.email.trim();
 
+  // username ต้องตรงกับเงื่อนไข backend: required, min 3, max 20
   if (!trimmedUsername) {
     errors.username = "Username is required";
   } else if (trimmedUsername.length < 3) {
@@ -23,16 +26,20 @@ function validateRegisterForm(formData) {
   } else if (trimmedUsername.length > 20) {
     errors.username = "Username must be at most 20 characters";
   }
+
+  // fullName เป็น field บังคับจาก backend เช่นกัน
   if (!trimmedFullName) {
     errors.fullName = "Full name is required";
   }
 
+  // regex นี้ใช้เช็กรูปแบบ email ขั้นพื้นฐานก่อนส่งไป backend
   if (!trimmedEmail) {
     errors.email = "Email is required";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
     errors.email = "Please enter a valid email address";
   }
 
+  // password ฝั่ง backend ต้องอย่างน้อย 8 และไม่เกิน 72
   if (!formData.password.trim()) {
     errors.password = "Password is required";
   } else if (formData.password.trim().length < 8) {
@@ -41,6 +48,7 @@ function validateRegisterForm(formData) {
     errors.password = "Password must be at most 72 characters";
   }
 
+  // confirmPassword มีไว้เช็กความถูกต้องฝั่ง UI ก่อนยิง API
   if (!formData.confirmPassword.trim()) {
     errors.confirmPassword = "Please confirm your password";
   } else if (formData.password !== formData.confirmPassword) {
@@ -101,6 +109,7 @@ function FormField({
 }
 
 export default function Register() {
+  // formData รวมค่าทั้งหมดของฟอร์มไว้ใน object เดียว
   const [formData, setFormData] = useState({
     username: "",
     fullName: "",
@@ -108,8 +117,10 @@ export default function Register() {
     password: "",
     confirmPassword: "",
   });
+  // state ชุดนี้ควบคุมการเปิด/ปิดการมองเห็น password
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // errors = error ของแต่ละช่อง, serverError = error ที่ backend ส่งกลับมา
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -117,6 +128,7 @@ export default function Register() {
   const [serverError, setServerError] = useState("");
 
   const updateField = (fieldName) => (event) => {
+    // ใช้ function เดียวอัปเดตได้หลาย input โดยส่งชื่อ field เข้ามา
     setFormData((currentValue) => ({
       ...currentValue,
       [fieldName]: event.target.value,
@@ -136,6 +148,7 @@ export default function Register() {
       return;
     }
 
+    // เมื่อไม่มี error ค่อยเริ่มส่งข้อมูลไป backend
     setIsSubmitting(true);
 
     try {
@@ -155,12 +168,15 @@ export default function Register() {
         body: JSON.stringify(payload),
       });
 
+      // อ่าน response body กลับจาก backend
       const result = await response.json();
 
       if (!response.ok) {
+        // ถ้า backend ตอบไม่ผ่าน เช่น email ซ้ำ จะโยนเข้า catch
         throw new Error(result.message || "Failed to create account");
       }
 
+      // สมัครสำเร็จ แสดงข้อความและล้างค่าฟอร์ม
       setSuccessMessage("Account created successfully");
 
       setFormData({
@@ -176,8 +192,10 @@ export default function Register() {
         navigate("/login");
       }, 1000);
     } catch (error) {
+      // ข้อความ error จาก backend จะมาแสดงในหน้า form ตรงนี้
       setServerError(error.message || "Something went wrong");
     } finally {
+      // finally จะทำงานเสมอ ไม่ว่าจะ success หรือ error
       setIsSubmitting(false);
     }
   };

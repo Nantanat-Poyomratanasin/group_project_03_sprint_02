@@ -6,21 +6,21 @@ import Footer from "../components/HomeComponents/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
-
-// ตอนพัฒนา local ตอนนี้ backend ฝั่ง group ใช้ base URL นี้อยู่
-const API_BASE_URL = "http://localhost:3000/api";
-const USER_EMAIL_KEY = "readlyUserEmail";
+import { useAuth } from "../context/AuthContext";
 
 function validateLoginForm(email, password) {
+  // errors จะเก็บข้อความผิดพลาดของแต่ละ field
   const errors = {};
   const trimmedEmail = email.trim();
 
+  // validate email แบบพื้นฐานก่อนส่ง backend
   if (!trimmedEmail) {
     errors.email = "Email is required";
   } else if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
     errors.email = "Please enter a valid email address";
   }
 
+  // password ไม่ควรปล่อยว่าง
   if (!password.trim()) {
     errors.password = "Password is required";
   }
@@ -92,20 +92,17 @@ function FormField({
 
 export default function Login() {
   const navigate = useNavigate();
-  const savedEmail =
-    typeof window !== "undefined"
-      ? (localStorage.getItem(USER_EMAIL_KEY) ?? "")
-      : "";
-
-  const [email, setEmail] = useState(savedEmail);
+  // ดึง function login จาก AuthContext มาใช้แทนการเขียน fetch ซ้ำในหน้านี้
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  // isSubmitting ใช้ป้องกันการกดปุ่มซ้ำระหว่างรอ backend ตอบกลับ
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // serverError = ข้อความผิดพลาดจาก backend เช่น password ไม่ถูก
   const [serverError, setServerError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(
-    savedEmail ? `Welcome back, ${savedEmail}` : "",
-  );
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -120,32 +117,15 @@ export default function Login() {
       return;
     }
 
+    // เมื่อ validation ผ่านแล้วค่อยเริ่มเรียก backend
     setIsSubmitting(true);
 
     try {
       const trimmedEmail = email.trim();
 
-      // route นี้จะตรวจ email/password และเซ็ต accessToken กลับมาใน cookie
-      const response = await fetch(`${API_BASE_URL}/users/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email: trimmedEmail.toLowerCase(),
-          password,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Login failed");
-      }
-
-      // เก็บ email ไว้ใช้เติมค่าเริ่มต้นให้ฟอร์มครั้งถัดไป
-      localStorage.setItem(USER_EMAIL_KEY, trimmedEmail);
+      // ให้ AuthContext จัดการ login + session + profile กลางของทั้งแอป
+      await login(trimmedEmail, password);
+      // ถ้า login สำเร็จ แสดงข้อความสั้น ๆ ก่อนพากลับหน้าแรก
       setSuccessMessage(`Login successful. Welcome back, ${trimmedEmail}`);
       setPassword("");
 
@@ -154,8 +134,10 @@ export default function Login() {
         navigate("/");
       }, 1000);
     } catch (error) {
+      // ถ้า backend ตอบ error จะมาเข้า catch และแสดงบนหน้า form
       setServerError(error.message || "Something went wrong");
     } finally {
+      // ปิดสถานะ loading ทุกกรณี
       setIsSubmitting(false);
     }
   };
