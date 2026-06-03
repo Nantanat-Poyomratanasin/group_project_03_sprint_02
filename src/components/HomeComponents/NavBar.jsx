@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useCart } from "../../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useBooks } from "../context/BookContext";
+import { useBooks } from "../../context/BookContext";
 
 export default function NavBar() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
