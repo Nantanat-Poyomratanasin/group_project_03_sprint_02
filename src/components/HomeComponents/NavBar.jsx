@@ -9,16 +9,29 @@ import { useState } from "react";
 import { useCart } from "../../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useBooks } from "../context/BookContext";
 
 export default function NavBar() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { setIsCartOpen, totalItems } = useCart();
+  const { books } = useBooks();
+  const [searchTerm, setSearchTerm] = useState("");
   // ดึงข้อมูล user และ function auth กลางจาก AuthContext
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   // state นี้ใช้ควบคุมเมนู profile dropdown
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const filteredBooks = books.filter((book) => {
+    if (!searchTerm) return false;
+    try {
+      const regex = new RegExp(searchTerm, "i");
+      return regex.test(book.name);
+    } catch {
+      return false;
+    }
+  });
 
   const navigate = useNavigate();
 
@@ -65,49 +78,56 @@ export default function NavBar() {
             </div>
           </Link>
 
-          {/* Search Bar with Category Dropdown - Desktop Only (hidden on mobile) */}
-          <div className="hidden md:flex flex-1 min-w-0 max-w-2xl mx-1 md:mx-8">
-            <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-300 w-full">
-              {/* Category Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 border-r border-gray-300 whitespace-nowrap"
-                >
-                  <span className="text-sm">{selectedCategory}</span>
-                  <ChevronDown size={16} />
-                </button>
+          {/* Search Bar */}
+          <div className="w-full md:max-w-[400px] lg:max-w-[550px] order-3 md:order-2 mt-2 md:mt-0 relative">
+            <div className="flex items-center bg-white rounded-lg border border-gray-300 shadow-sm overflow-hidden">
+              <input
+                type="text"
+                placeholder="Search your favorite books..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 px-3 py-2 text-sm outline-none bg-transparent"
+              />
+              <button className="px-3 py-2 text-gray-400">
+                <Search size={18} />
+              </button>
+            </div>
 
-                {isDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
-                    {categories.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => {
-                          setSelectedCategory(category);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg"
-                      >
-                        {category}
-                      </button>
+            {searchTerm && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border rounded-xl shadow-2xl z-[60] max-h-80 overflow-y-auto">
+                {filteredBooks.length > 0 ? (
+                  <ul className="divide-y divide-gray-100">
+                    {filteredBooks.map((book) => (
+                      <li key={book.id}>
+                        <Link
+                          to={`/products/${book.id}`}
+                          className="flex items-center gap-4 p-3 hover:bg-[#faf6f4] transition-colors"
+                          onClick={() => setSearchTerm("")}
+                        >
+                          <img
+                            src={book.img}
+                            className="w-8 h-12 object-cover rounded shadow-sm"
+                            alt=""
+                          />
+                          <div className="text-left font-sans">
+                            <div className="text-sm font-bold text-gray-900">
+                              {book.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {book.author}
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
                     ))}
+                  </ul>
+                ) : (
+                  <div className="p-4 text-center text-sm text-gray-500">
+                    No results found.
                   </div>
                 )}
               </div>
-
-              {/* Search Input */}
-              <div className="flex-1 flex items-center min-w-0">
-                <input
-                  type="text"
-                  placeholder="Search your favorite book..."
-                  className="flex-1 min-w-0 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
-                />
-                <button className="px-4 py-2 text-gray-400 hover:text-gray-600">
-                  <Search size={20} />
-                </button>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Right Icons */}
