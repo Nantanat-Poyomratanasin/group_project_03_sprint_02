@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, Ticket } from "lucide-react"
 import NavBar from "../components/HomeComponents/NavBar"
 import Footer from "../components/HomeComponents/Footer"
 import { useCart } from "../context/CartContext"
+import { useAuth } from "../context/AuthContext"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api"
 const SHIPPING = 50
@@ -89,7 +90,7 @@ function SuccessView({ orderNumber, totalPaid, onReturnToShop }) {
 export default function PaymentPage({ onBackToHome }) {
   const navigate = useNavigate()
   const { clearCart, cartItems } = useCart()
-
+  const {user} = useAuth();
   const [couponInput, setCouponInput] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [couponError, setCouponError] = useState("")
@@ -170,6 +171,7 @@ export default function PaymentPage({ onBackToHome }) {
       const payload = await apiRequest("/orders", {
         method: "POST",
         body: JSON.stringify({
+          user_id: user.id || user._id,
           total_amount: total,
           status: "paid",
           order_item: cartItems.map((item) => ({
@@ -183,7 +185,7 @@ export default function PaymentPage({ onBackToHome }) {
             discountPercent: item.discountPercent,
           })),
         }),
-      })
+      });
 
       clearCart()
       setOrderNumber(payload.data?._id ?? "Order created")
