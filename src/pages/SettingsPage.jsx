@@ -5,10 +5,15 @@ import { Phone, Headphones, CreditCard, Lock } from "lucide-react";
 import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
 
+import { useAuth } from "../context/AuthContext";
+
+import { useNavigate } from "react-router-dom";
+
 export default function SettingsPage() {
   /* =========================
      STATES
   ========================= */
+  const { logout, isLoading } = useAuth();
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
@@ -40,6 +45,7 @@ export default function SettingsPage() {
   const modalRef = useRef(null);
   const paymentButtonRef = useRef(null);
   const profileButtonRef = useRef(null);
+  const navigate = useNavigate();
   /* =========================
      Initial DATA
   ========================= */
@@ -78,6 +84,69 @@ export default function SettingsPage() {
     country: "",
   });
 
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/users/me", {
+          credentials: "include",
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          setProfile(result.data);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    const updatedData = {
+      fullName: profile.fullName || "",
+      username: profile.username || "",
+      dob: profile.dateOfBirth ? profile.dateOfBirth.slice(0, 10) : "",
+      email: profile.email || "",
+      phone: profile.phone || "",
+      address: profile.address
+        ? [
+            profile.address.building,
+            profile.address.road,
+            profile.address.district,
+            profile.address.province,
+            profile.address.postcode,
+            profile.address.country,
+          ]
+            .filter(Boolean)
+            .join(", ")
+        : "",
+      cardholder: profile.card?.cardholder || "",
+      cardNumber: profile.card?.cardNumber || "",
+      expiry: profile.card?.expiry || "",
+      cvv: profile.card?.cvv || "",
+    };
+
+    setFormData(updatedData);
+    setProfileDraft(updatedData);
+    setPaymentDraft(updatedData);
+    setAddressDraft({
+      building: profile.address?.building || "",
+      road: profile.address?.road || "",
+      province: profile.address?.province || "",
+      district: profile.address?.district || "",
+      subDistrict: profile.address?.subdistrict || "",
+      postCode: profile.address?.postcode || "",
+      country: profile.address?.country || "",
+    });
+  }, [profile]);
+
   /* =========================
      CLICK OUTSIDE
   ========================= */
@@ -113,6 +182,10 @@ export default function SettingsPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isEditingProfile, isEditingPayment, formData]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   /* =========================
      PROFILE FIELD
@@ -178,9 +251,31 @@ export default function SettingsPage() {
               <div ref={profileButtonRef} className="flex gap-3">
                 {/* SAVE */}
                 <button
-                  onClick={() => {
-                    setFormData(profileDraft);
+                  onClick={async () => {
+                    const response = await fetch(
+                      "http://localhost:3000/api/users/me",
+                      {
+                        method: "PATCH",
+                        credentials: "include",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          fullName: profileDraft.fullName,
+                          username: profileDraft.username,
+                          email: profileDraft.email,
+                          phone: profileDraft.phone,
+                        }),
+                      },
+                    );
 
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                      alert(result.error || result.message || "Update failed");
+                      return;
+                    }
+                    setFormData(profileDraft);
                     setIsEditingProfile(false);
                   }}
                   className="px-6 py-2 bg-[#b67662] text-white rounded-full hover:bg-[#9f6453] transition"
@@ -282,9 +377,41 @@ export default function SettingsPage() {
                 <div ref={paymentButtonRef} className="flex gap-3">
                   {/* SAVE */}
                   <button
-                    onClick={() => {
-                      setFormData(paymentDraft);
+                    onClick={async () => {
+                      if (
+                        paymentDraft.cvv &&
+                        !/^\d{3}$/.test(paymentDraft.cvv)
+                      ) {
+                        alert("CVV must be exactly 3 digits");
+                        return;
+                      }
+                      const response = await fetch(
+                        "http://localhost:3000/api/users/me",
+                        {
+                          method: "PATCH",
+                          credentials: "include",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            card: {
+                              cardholder: paymentDraft.cardholder,
+                              cardNumber: paymentDraft.cardNumber,
+                              expiry: paymentDraft.expiry,
+                              cvv: paymentDraft.cvv,
+                            },
+                          }),
+                        },
+                      );
 
+                      const result = await response.json();
+
+                      if (!response.ok) {
+                        alert(result.error || "Update card failed");
+                        return;
+                      }
+
+                      setFormData(paymentDraft);
                       setIsEditingPayment(false);
                     }}
                     className="px-5 py-2 bg-[#b67662] text-white rounded-full hover:bg-[#9f6453] transition"
@@ -425,7 +552,9 @@ export default function SettingsPage() {
                     <div className="flex justify-between">
                       <span className="text-[#878584]">CVV</span>
 
-                      <span className="text-[#878584]">{formData.cvv}</span>
+                      <span className="text-[#878584]">
+                        {formData.cvv ? "xxx" : "-"}
+                      </span>
                     </div>
                   </>
                 )}
@@ -468,7 +597,13 @@ export default function SettingsPage() {
           </div>
 
           {/* LOGOUT */}
-          <button className="w-full mt-10 bg-white rounded-full py-4 text-red-500 font-semibold shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:bg-red-50 transition">
+          <button
+            onClick={async () => {
+              await logout();
+              navigate("/");
+            }}
+            className="w-full mt-10 bg-white rounded-full py-4 text-red-500 font-semibold shadow-[0_2px_6px_rgba(0,0,0,0.05)] hover:bg-red-50 transition"
+          >
             Log out
           </button>
         </section>
@@ -613,7 +748,36 @@ export default function SettingsPage() {
             {/* BUTTONS */}
             <div className="flex justify-center gap-4 mt-8">
               <button
-                onClick={() => {
+                onClick={async () => {
+                  const response = await fetch(
+                    "http://localhost:3000/api/users/me",
+                    {
+                      method: "PATCH",
+                      credentials: "include",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        address: {
+                          building: addressDraft.building,
+                          road: addressDraft.road,
+                          province: addressDraft.province,
+                          district: addressDraft.district,
+                          subdistrict: addressDraft.subDistrict,
+                          postcode: addressDraft.postCode,
+                          country: addressDraft.country,
+                        },
+                      }),
+                    },
+                  );
+
+                  const result = await response.json();
+
+                  if (!response.ok) {
+                    alert(result.error || "Update address failed");
+                    return;
+                  }
+
                   setFormData((prev) => ({
                     ...prev,
                     address: [
