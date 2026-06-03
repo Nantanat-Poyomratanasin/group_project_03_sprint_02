@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, CheckCircle2, Ticket } from "lucide-react"
 import NavBar from "../components/HomeComponents/NavBar"
@@ -8,27 +8,6 @@ import { useCart } from "../context/CartContext"
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api"
 const SHIPPING = 50
 
-function toNumber(value) {
-  if (value == null) return 0
-  if (typeof value === "number") return value
-  if (typeof value === "object" && "$numberDecimal" in value) {
-    return Number(value.$numberDecimal)
-  }
-  return Number(value) || 0
-}
-
-function normalizeCartItem(item) {
-  return {
-    id: item.book_id?._id ?? item.book_id ?? item.id,
-    name: item.book_name ?? item.name,
-    author: item.author ?? "",
-    price: toNumber(item.price),
-    img: item.img_link ?? item.img,
-    quantity: Number(item.quantity) || 1,
-    isDiscount: Boolean(item.isDiscount),
-    discountPercent: Number(item.discountPercent) || 0,
-  }
-}
 
 async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -109,12 +88,7 @@ function SuccessView({ orderNumber, totalPaid, onReturnToShop }) {
 
 export default function PaymentPage({ onBackToHome }) {
   const navigate = useNavigate()
-  const { clearCart } = useCart()
-
-  const [cartItems, setCartItems] = useState([])
-  const [cartIds, setCartIds] = useState([])
-  const [isLoadingCart, setIsLoadingCart] = useState(true)
-  const [cartError, setCartError] = useState("")
+  const { clearCart, cartItems } = useCart()
 
   const [couponInput, setCouponInput] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState(null)
@@ -141,52 +115,6 @@ export default function PaymentPage({ onBackToHome }) {
 
     navigate("/")
   }
-
-  useEffect(() => {
-    let ignore = false
-
-    async function fetchCartFromDatabase() {
-      setIsLoadingCart(true)
-      setCartError("")
-
-      try {
-        const profilePayload = await apiRequest("/users/auth/me")
-        const userId =
-          profilePayload.data?._id ?? profilePayload.user?._id ?? profilePayload._id
-
-        if (!userId) {
-          throw new Error("User session was found, but user id is missing.")
-        }
-
-        const cartPayload = await apiRequest(`/cart/${userId}`)
-        const cartDocs = Array.isArray(cartPayload.data) ? cartPayload.data : []
-        const nextCartItems = cartDocs.flatMap((cart) =>
-          Array.isArray(cart.cart_item) ? cart.cart_item.map(normalizeCartItem) : [],
-        )
-
-        if (!ignore) {
-          setCartIds(cartDocs.map((cart) => cart._id).filter(Boolean))
-          setCartItems(nextCartItems)
-        }
-      } catch (error) {
-        if (!ignore) {
-          setCartError(error.message)
-          setCartItems([])
-          setCartIds([])
-        }
-      } finally {
-        if (!ignore) {
-          setIsLoadingCart(false)
-        }
-      }
-    }
-
-    fetchCartFromDatabase()
-
-    return () => {
-      ignore = true
-    }
-  }, [])
 
   async function handleApplyCoupon() {
     setAppliedCoupon(null)
@@ -257,8 +185,6 @@ export default function PaymentPage({ onBackToHome }) {
         }),
       })
 
-      await Promise.allSettled(cartIds.map((cartId) => apiRequest(`/cart/${cartId}`, { method: "DELETE" })))
-
       clearCart()
       setOrderNumber(payload.data?._id ?? "Order created")
       setFinalTotal(total)
@@ -312,7 +238,7 @@ export default function PaymentPage({ onBackToHome }) {
               />
               <button
                 onClick={handleApplyCoupon}
-                disabled={isApplyingCoupon || isLoadingCart || cartItems.length === 0}
+                disabled={isApplyingCoupon || cartItems.length === 0}
                 className="bg-[#2F241F] hover:bg-[#3A2F2A] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-6 py-3 rounded-xl transition-colors font-['Playfair_Display'] cursor-pointer whitespace-nowrap"
               >
                 {isApplyingCoupon ? "Applying..." : "Apply"}
@@ -337,15 +263,7 @@ export default function PaymentPage({ onBackToHome }) {
               Order Summary
             </h2>
 
-            {isLoadingCart ? (
-              <p className="text-[#7D6A62] font-['Cormorant_Garamond'] text-base mb-4">
-                Loading your cart...
-              </p>
-            ) : cartError ? (
-              <p className="text-red-500 font-['Cormorant_Garamond'] text-base mb-4">
-                {cartError}
-              </p>
-            ) : cartItems.length === 0 ? (
+            {cartItems.length === 0 ? (
               <p className="text-[#7D6A62] font-['Cormorant_Garamond'] text-base mb-4">
                 Your cart is empty.
               </p>
@@ -408,7 +326,7 @@ export default function PaymentPage({ onBackToHome }) {
 
             <button
               onClick={handlePayNow}
-              disabled={isLoadingCart || cartItems.length === 0 || Boolean(cartError)}
+              disabled={cartItems.length === 0}
               className="w-full bg-[#A66858] hover:bg-[#8B5A4A] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 px-6 rounded-xl transition-colors font-['Playfair_Display'] cursor-pointer"
             >
               Confirm &amp; Pay
