@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { apiFetch } from "../lib/api";
 
 // base URL ของ backend ที่ใช้กับ auth ทั้ง login / logout / get profile
-const API_BASE_URL =
-  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // key นี้ใช้เก็บ email ล่าสุดใน localStorage แบบช่วยจำ ไม่ใช่ token หลัก
 const AUTH_EMAIL_KEY = "readlyUserEmail";
 
@@ -19,25 +19,14 @@ export function AuthProvider({ children }) {
     try {
       // route นี้ใช้เช็ก session จาก cookie ที่ backend เซ็ตไว้หลัง login
       // ถ้า cookie ยัง valid backend จะส่งข้อมูล user กลับมา
-      const response = await fetch(`${API_BASE_URL}/users/me`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      // แปลง response จาก backend ให้เป็น object ที่ใช้งานต่อได้ใน frontend
-      const result = await response.json();
-
-      if (!response.ok) {
-        // ถ้า session ไม่ผ่าน ให้ถือว่ายังไม่มี user login อยู่
-        setUser(null);
-        return null;
-      }
+      const result = await apiFetch("/users/auth/me");
 
       // เก็บ email ล่าสุดไว้เผื่อใช้เติมค่าเริ่มต้นในฟอร์มหรือ debug session
-      window.localStorage.setItem(AUTH_EMAIL_KEY, result.data.email ?? "");
+      window.localStorage.setItem(AUTH_EMAIL_KEY, result.data?.email ?? "");
       setUser(result.data);
       return result.data;
     } catch {
+      // ถ้า session ไม่ผ่าน ให้ถือว่ายังไม่มี user login อยู่
       setUser(null);
       return null;
     }
@@ -48,24 +37,13 @@ export function AuthProvider({ children }) {
     const trimmedEmail = email.trim().toLowerCase();
 
     // route นี้ตรวจ email/password และสร้าง cookie session ให้ฝั่ง browser
-    const response = await fetch(`${API_BASE_URL}/users/login`, {
+    const result = await apiFetch("/users/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
+      body: {
         email: trimmedEmail,
         password,
-      }),
+      },
     });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      // โยน error กลับไปให้หน้า Login แสดงข้อความผิดพลาด
-      throw new Error(result.message || "Login failed");
-    }
 
     // เก็บ email ล่าสุดไว้แบบช่วยจำ
     window.localStorage.setItem(AUTH_EMAIL_KEY, trimmedEmail);
@@ -77,10 +55,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       // route นี้ให้ backend ลบ cookie session ฝั่ง server/client
-      await fetch(`${API_BASE_URL}/users/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      await apiFetch("/users/auth/logout", { method: "POST" });
     } finally {
       // ถึง backend จะ error ก็ยังล้างข้อมูล local ฝั่ง frontend ไว้ก่อน
       window.localStorage.removeItem(AUTH_EMAIL_KEY);
@@ -111,6 +86,8 @@ export function AuthProvider({ children }) {
       isLoading,
       // แปลง user เป็น true/false ที่หน้าอื่นเอาไปใช้ได้ง่าย
       isAuthenticated: Boolean(user),
+      // alias สำหรับ BookDetail.jsx ที่ destructure ชื่อนี้
+      isLoggedIn: Boolean(user),
       // เพิ่ม isAdmin โดยใช้ Optional Chaining (?.) เพื่อป้องกันแอปพังกรณีที่ user เป็น null
       // (สามารถเปลี่ยนค่า "admin" เป็นค่าอื่นตามที่ backend กำหนดไว้ได้ เช่น "ADMIN" หรือ 1)
       isAdmin: user?.role === "admin",
