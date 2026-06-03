@@ -12,6 +12,7 @@ export function NavBarAdmin({ activeTab, setActiveTab }) {
     "User Catalog",
     "Order management",
     "Coupon code",
+    "Feedbacks"
   ];
 
   return (
