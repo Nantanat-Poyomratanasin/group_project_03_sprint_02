@@ -10,7 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import Admin from "@/components/AdminComponents/Admin";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api";
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api";
 
 function toNumber(value) {
   if (value == null) return 0;
