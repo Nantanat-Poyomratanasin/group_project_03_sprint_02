@@ -5,6 +5,7 @@ import {
   UserCatalogTable,
   OrderManagementTable,
   CouponCodeTable,
+  FeedbackTable
 } from "./TableGrid";
 import { useState } from "react";
 

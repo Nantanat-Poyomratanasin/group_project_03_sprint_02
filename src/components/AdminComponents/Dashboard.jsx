@@ -4,11 +4,13 @@ import * as d3 from "d3";
 // ==========================================
 // 1. API CONFIG & HELPERS
 // ==========================================
-const API_BASE_URL = "http://localhost:3002/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const apiClient = {
   get: async (endpoint) => {
-    const res = await fetch(`${API_BASE_URL}${endpoint}`);
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      credentials: "include",
+    });
     if (!res.ok) throw new Error(`GET ${endpoint} failed`);
     return res.json();
   },
@@ -20,6 +22,15 @@ const parseDecimal128 = (value) => {
   return Number(value) || 0;
 };
 
+// NEW: Safe ID Extractor to handle MongoDB ObjectIds
+const extractId = (idProp) => {
+  if (!idProp) return "unknown";
+  if (typeof idProp === "string") return idProp;
+  if (idProp.$oid) return idProp.$oid; // Handles raw python/mongo JSON
+  if (typeof idProp.toString === "function") return idProp.toString();
+  return String(idProp);
+};
+
 // ==========================================
 // 2. SHARED CONSTANTS
 // ==========================================
@@ -28,6 +39,7 @@ const categoryColors = {
   SelfHelp: "#60A5FA", // Blue
   SciFi: "#A78BFA", // Purple
   History: "#FBBF24", // Yellow
+  Children: "#10B981", // Green
 };
 
 const targetMonthlySales = 50000; // Define your target here (THB)
@@ -37,12 +49,13 @@ const targetMonthlySales = 50000; // Define your target here (THB)
 // ==========================================
 const LineChart = ({ data }) => {
   const svgRef = useRef();
-  const categories = ["Romance", "SelfHelp", "SciFi", "History"];
+  const categories = ["Romance", "SelfHelp", "SciFi", "History", "Children"];
   const displayNames = {
     Romance: "Romance",
     SelfHelp: "Self help",
     SciFi: "Sci fi",
     History: "History",
+    Children: "Children",
   };
 
   useEffect(() => {
@@ -60,10 +73,9 @@ const LineChart = ({ data }) => {
       .range([margin.left, width - margin.right])
       .padding(0.1);
 
-    // Find dynamic max for Y axis
     const maxVal =
       d3.max(data, (d) =>
-        Math.max(d.Romance, d.SelfHelp, d.SciFi, d.History),
+        Math.max(d.Romance, d.SelfHelp, d.SciFi, d.History, d.Children || 0),
       ) || 30;
     const y = d3
       .scaleLinear()
@@ -153,12 +165,13 @@ const LineChart = ({ data }) => {
 
 const BarChart = ({ data }) => {
   const svgRef = useRef();
-  const subgroups = ["Romance", "SelfHelp", "SciFi", "History"];
+  const subgroups = ["Romance", "SelfHelp", "SciFi", "History", "Children"];
   const displayNames = {
     Romance: "Romance",
     SelfHelp: "Self help",
     SciFi: "Sci fi",
     History: "History",
+    Children: "Children",
   };
 
   useEffect(() => {
@@ -182,10 +195,9 @@ const BarChart = ({ data }) => {
       .range([0, x.bandwidth()])
       .padding([0.05]);
 
-    // Find dynamic max for Y axis
     const maxVal =
       d3.max(data, (d) =>
-        Math.max(d.Romance, d.SelfHelp, d.SciFi, d.History),
+        Math.max(d.Romance, d.SelfHelp, d.SciFi, d.History, d.Children || 0),
       ) || 3000;
     const y = d3
       .scaleLinear()
@@ -200,6 +212,7 @@ const BarChart = ({ data }) => {
         categoryColors.SelfHelp,
         categoryColors.SciFi,
         categoryColors.History,
+        categoryColors.Children,
       ]);
 
     const g = svg.append("g");
@@ -401,7 +414,6 @@ export function Dashboard() {
           apiClient.get("/orders").catch(() => []),
           apiClient.get("/products").catch(() => []),
         ]);
-
         const rawOrders = Array.isArray(ordersRes)
           ? ordersRes
           : ordersRes.data || [];
@@ -412,16 +424,19 @@ export function Dashboard() {
         // 2. Map Product IDs to their standardized categories
         const categoryMap = {};
         rawProducts.forEach((p) => {
-          const id = p._id || p.id;
+          // ADDED EXTRACT ID FIX HERE:
+          const id = extractId(p._id || p.id);
           let cat = p.category ? p.category.toLowerCase() : "other";
-          // Normalize to expected D3 keys
+
           if (cat.includes("romance")) categoryMap[id] = "Romance";
           else if (cat.includes("self") || cat.includes("help"))
             categoryMap[id] = "SelfHelp";
           else if (cat.includes("sci") || cat.includes("fiction"))
             categoryMap[id] = "SciFi";
           else if (cat.includes("history")) categoryMap[id] = "History";
-          else categoryMap[id] = "Romance"; // Default fallback to prevent chart breaks
+          else if (cat.includes("child") || cat.includes("kid"))
+            categoryMap[id] = "Children";
+          else categoryMap[id] = "Romance"; // Fallback
         });
 
         // 3. Prepare Time/Aggregation Variables
@@ -435,9 +450,9 @@ export function Dashboard() {
           SelfHelp: 0,
           SciFi: 0,
           History: 0,
+          Children: 0,
         };
 
-        // Setup last 6 months structure for charts
         const monthNames = [
           "Jan",
           "Feb",
@@ -455,7 +470,6 @@ export function Dashboard() {
         const lineChartMap = {};
         const barChartMap = {};
 
-        // Initialize last 6 months
         for (let i = 5; i >= 0; i--) {
           let m = currentMonth - i;
           if (m < 0) m += 12;
@@ -466,6 +480,7 @@ export function Dashboard() {
             SelfHelp: 0,
             SciFi: 0,
             History: 0,
+            Children: 0,
           };
           barChartMap[monthLabel] = {
             month: monthLabel,
@@ -473,12 +488,13 @@ export function Dashboard() {
             SelfHelp: 0,
             SciFi: 0,
             History: 0,
+            Children: 0,
           };
         }
 
         // 4. Process Orders
         rawOrders.forEach((order) => {
-          if (order.status === "cancelled") return; // Ignore cancelled orders
+          if (order.status === "cancelled") return;
 
           const orderDate = new Date(order.createdAt);
           if (isNaN(orderDate.getTime())) return;
@@ -496,19 +512,22 @@ export function Dashboard() {
             totalSalesThisMonth += orderTotal;
           }
 
-          // Process Order Items
           if (Array.isArray(order.order_item)) {
             order.order_item.forEach((item) => {
-              const bookCat = categoryMap[item.book_id] || "Romance"; // Fallback if missing
+              // ADDED EXTRACT ID FIX HERE:
+              const safeBookId = extractId(item.book_id);
+              const bookCat = categoryMap[safeBookId] || "Romance";
+
               const itemQty = item.quantity || 1;
               const itemPrice = parseDecimal128(item.price);
               const itemRevenue = itemQty * itemPrice;
 
               if (isCurrentMonth) {
-                categorySalesThisMonth[bookCat] += itemRevenue;
+                if (categorySalesThisMonth[bookCat] !== undefined) {
+                  categorySalesThisMonth[bookCat] += itemRevenue;
+                }
               }
 
-              // Only populate charts if order fell within the initialized last 6 months
               if (lineChartMap[orderMonthLabel]) {
                 lineChartMap[orderMonthLabel][bookCat] += itemQty;
                 barChartMap[orderMonthLabel][bookCat] += itemRevenue;
@@ -518,7 +537,6 @@ export function Dashboard() {
         });
 
         // 5. Format Data for D3
-        // Format Donut Chart (Percentages)
         const donutChart = Object.keys(categorySalesThisMonth)
           .map((cat) => ({
             category:
@@ -537,7 +555,6 @@ export function Dashboard() {
           }))
           .filter((item) => item.value > 0);
 
-        // Calculate Gauge
         const gaugeTarget =
           totalSalesThisMonth > 0
             ? (totalSalesThisMonth / targetMonthlySales) * 100
