@@ -25,7 +25,7 @@ export default function BookCard({ book, variant = "default" }) {
 
   return (
     <Link
-      to={`/bookDetail/${book.id}`}
+      to={`/bookDetail/${book._id || book.id}`}
       className={isGridVariant ? "block h-full" : "block"}
     >
       {/* ถ้าอยู่ใน Hero จะใช้ card ที่ใหญ่ขึ้นเพื่อให้เห็นแค่ 3 ใบตามตัวอย่าง */}
