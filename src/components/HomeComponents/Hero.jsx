@@ -24,11 +24,11 @@ export default function Hero() {
           md:max-w-full
           md:items-start
           md:pl-8
-          lg:max-w-[360px]
+          lg:max-w-[300px]
           lg:flex-col
           whitespace-nowrap
           lg:whitespace-normal
-          lg:pl-16 lg:pr-8
+          lg:pl-16 lg:pr-6
           pt-8
           pb-4
           px-6
@@ -80,8 +80,8 @@ export default function Hero() {
       >
         <div
           className="w-full mx-auto rounded-[32px] bg-[#faf4ef] px-5 py-1 
-        md:px-5 md:py-8 md:max-w-[720px]
-        lg:rounded-[36px] lg:px-6 lg:py-2 lg:max-w-[840px]"
+        md:px-5 md:py-8 md:max-w-[640px]
+        lg:rounded-[36px] lg:px-4 lg:py-2 lg:max-w-[800px]"
         >
           <SlideBooks books={trendingBooks} variant="hero" visibleCards={3} />
         </div>
