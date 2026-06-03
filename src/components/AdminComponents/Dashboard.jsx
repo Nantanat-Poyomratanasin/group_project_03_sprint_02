@@ -291,9 +291,13 @@ const DonutChart = ({ data }) => {
 
   useEffect(() => {
     if (!data || data.length === 0) return;
+
     const width = 280;
     const height = 280;
     const radius = Math.min(width, height) / 2;
+
+    // 1. Calculate the total sum of all values
+    const total = d3.sum(data, (d) => d.value);
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
@@ -301,14 +305,17 @@ const DonutChart = ({ data }) => {
     const g = svg
       .append("g")
       .attr("transform", `translate(${width / 2},${height / 2})`);
+
     const pie = d3
       .pie()
       .value((d) => d.value)
       .sort(null);
+
     const arc = d3
       .arc()
       .innerRadius(radius * 0.5)
       .outerRadius(radius * 0.9);
+
     const outerArc = d3
       .arc()
       .innerRadius(radius * 1)
@@ -322,6 +329,7 @@ const DonutChart = ({ data }) => {
       .attr("fill", (d) => d.data.color)
       .attr("stroke", "white")
       .style("stroke-width", "2px");
+
     arcs
       .append("text")
       .attr("transform", (d) => {
@@ -333,7 +341,11 @@ const DonutChart = ({ data }) => {
       .style("font-size", "11px")
       .style("fill", "#4b5563")
       .selectAll("tspan")
-      .data((d) => [d.data.category, `${d.data.value}%`])
+      // 2. Calculate the actual percentage here
+      .data((d) => {
+        const percentage = Math.round((d.data.value / total) * 100);
+        return [d.data.category, `${percentage}%`];
+      })
       .enter()
       .append("tspan")
       .attr("x", 0)

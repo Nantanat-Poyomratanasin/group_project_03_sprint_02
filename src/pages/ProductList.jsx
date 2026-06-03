@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from "react";
 import Pagination from "@mui/material/Pagination";
 import BookCard from "../components/CardComponents/BookCard";
-import { bookData } from "../mock-data/bookData";
+import { useBooks } from "../context/BookContext";
 
 import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
 import { ScrollRestoration } from "react-router-dom";
 
 const ProductList = () => {
-  // --- States ---
+  const { books, isLoading, error } = useBooks();
 
   const categories = ["All","Self-help", "History", "Science fiction & Fantasy","Children","Romance"];
 
-
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
-  const [ selectedCategory, setSelectedCategory ] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   // --- Responsive Logic ---
   useEffect(() => {
@@ -34,8 +33,8 @@ const ProductList = () => {
   // --- Filtering Logic ---
   const filteredBooks =
     selectedCategory === "All"
-      ? bookData
-      : bookData.filter((book) => book.category === selectedCategory);
+      ? books
+      : books.filter((book) => book.category === selectedCategory);
 
   // --- Pagination Logic (Now based on filteredBooks) ---
   const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
@@ -97,14 +96,21 @@ const ProductList = () => {
           </div>
 
           {/* Responsive Grid Layout */}
-          {filteredBooks.length > 0 ? (
+          {isLoading ? (
+            <div className="min-h-[600px] flex items-center justify-center">
+              <p className="text-gray-500 text-lg">Loading...</p>
+            </div>
+          ) : error ? (
+            <div className="min-h-[600px] flex items-center justify-center">
+              <p className="text-red-500 text-lg">{error}</p>
+            </div>
+          ) : filteredBooks.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-7 min-h-[600px] content-start items-stretch">
               {currentBooks.map((book) => (
                 <BookCard key={book.id} book={book} variant="grid" />
               ))}
             </div>
           ) : (
-            // Empty state handling if a category has no books
             <div className="min-h-[600px] flex items-center justify-center">
               <p className="text-gray-500 text-lg">
                 No books found in this category.
