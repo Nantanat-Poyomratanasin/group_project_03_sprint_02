@@ -4,8 +4,7 @@ import { DataGrid, GridRowModes } from "@mui/x-data-grid";
 // ==========================================
 // 1. API CLIENT & CONFIGURATION
 // ==========================================
-const API_BASE_URL =
-  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const apiClient = {
   get: async (endpoint) => {
@@ -293,7 +292,9 @@ export function ProductCatalogTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/products", payload);
-        savedRow = { ...response, id: response._id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -301,7 +302,9 @@ export function ProductCatalogTable() {
       } else {
         const updateId = payload._id || payload.id;
         const response = await apiClient.put(`/products/${updateId}`, payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
         );
@@ -350,6 +353,7 @@ export function ProductCatalogTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
@@ -523,11 +527,13 @@ export function UserCatalogTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/users", payload);
+        const itemData = response.data || response;
+
         savedRow = {
-          ...response,
-          id: response._id,
-          address_province: response.address?.province || "",
-          address_country: response.address?.country || "",
+          ...itemData,
+          id: itemData._id || itemData.id,
+          address_province: itemData.address?.province || "",
+          address_country: itemData.address?.country || "",
         };
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
@@ -536,11 +542,13 @@ export function UserCatalogTable() {
       } else {
         const updateId = payload._id || payload.id;
         const response = await apiClient.put(`/users/${updateId}`, payload);
+        const itemData = response.data || response;
+
         savedRow = {
-          ...response,
-          id: response._id || response.id,
-          address_province: response.address?.province || "",
-          address_country: response.address?.country || "",
+          ...itemData,
+          id: itemData._id || itemData.id,
+          address_province: itemData.address?.province || "",
+          address_country: itemData.address?.country || "",
         };
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
@@ -590,6 +598,7 @@ export function UserCatalogTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
@@ -608,11 +617,6 @@ export function UserCatalogTable() {
 // ==========================================
 // 5. ORDER MANAGEMENT TABLE
 // ==========================================
-
-// ==========================================
-// 5. ORDER MANAGEMENT TABLE
-// ==========================================
-
 export function OrderManagementTable() {
   const [rows, setRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -796,7 +800,9 @@ export function OrderManagementTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/orders", payload);
-        savedRow = { ...response, id: response._id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -804,7 +810,9 @@ export function OrderManagementTable() {
       } else {
         const updateId = payload._id || payload.id;
         const response = await apiClient.put(`/orders/${updateId}`, payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
         );
@@ -853,6 +861,7 @@ export function OrderManagementTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
@@ -1021,7 +1030,9 @@ export function CouponCodeTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/coupons", payload);
-        savedRow = { ...response, id: response._id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -1029,7 +1040,9 @@ export function CouponCodeTable() {
       } else {
         const updateId = payload._id || payload.id;
         const response = await apiClient.put(`/coupons/${updateId}`, payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
         );
@@ -1078,6 +1091,7 @@ export function CouponCodeTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
@@ -1202,7 +1216,9 @@ export function FeedbackTable() {
         payload.updatedAt = new Date().toISOString();
 
         const response = await apiClient.post("/feedback", payload);
-        savedRow = { ...response, id: response._id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -1212,7 +1228,9 @@ export function FeedbackTable() {
         payload.updatedAt = new Date().toISOString();
 
         const response = await apiClient.put(`/feedback/${updateId}`, payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
         );
@@ -1261,6 +1279,7 @@ export function FeedbackTable() {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          getRowId={(row) => row.id || row._id}
           checkboxSelection
           disableRowSelectionOnClick
           sx={dataGridStyles}
