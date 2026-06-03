@@ -1,11 +1,13 @@
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 
 function formatPrice(price) {
   return `$${price.toFixed(2)}`;
 }
 
-export default function Cart({ onCheckout }) {
+export default function Cart() {
+  const navigate = useNavigate();
   const {
     cartItems,
     clearCart,
@@ -123,7 +125,10 @@ export default function Cart({ onCheckout }) {
               <button
                 className="w-full rounded-2xl bg-[#B77B68] px-6 py-4 text-lg font-semibold text-white transition hover:bg-[#A66858] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={cartItems.length === 0}
-                onClick={() => { setIsCartOpen(false); onCheckout?.() }}
+                onClick={() => {
+                  setIsCartOpen(false);
+                  navigate("/paymentPage");
+                }}
               >
                 Checkout
               </button>

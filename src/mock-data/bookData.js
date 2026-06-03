@@ -2,7 +2,7 @@
 export const bookData = [
   {
     id: 1,
-    name: "Atomic Habits: An Easy & Proven Way to Build Good Habits & Break Bad Ones",
+    name: "Mock - Atomic Habits: An Easy & Proven Way to Build Good Habits & Break Bad Ones",
     category: "Self-help",
     author: "James Clear",
     price: 588,
@@ -17,7 +17,7 @@ export const bookData = [
   },
   {
     id: 2,
-    name: "Stop Letting Everything Affect You",
+    name: "Mock - Stop Letting Everything Affect You",
     category: "Self-help",
     author: "Marc Reklau",
     price: 326,
@@ -32,7 +32,7 @@ export const bookData = [
   },
   {
     id: 3,
-    name: "The Let Them Theory",
+    name: "Mock - The Let Them Theory",
     category: "Self-help",
     author: "Mel Robbins",
     price: 588,
@@ -47,7 +47,7 @@ export const bookData = [
   },
   {
     id: 4,
-    name: "The Subtle Art of Not Giving a F*ck",
+    name: "Mock - The Subtle Art of Not Giving a F*ck",
     category: "Self-help",
     author: "Mark Manson",
     price: 457,
@@ -62,7 +62,7 @@ export const bookData = [
   },
   {
     id: 5,
-    name: "The Meaning of Your Life",
+    name: "Mock - The Meaning of Your Life",
     category: "Self-help",
     author: "Finding Purpose",
     price: 522,
@@ -77,7 +77,7 @@ export const bookData = [
   },
   {
     id: 6,
-    name: "The Four Agreements: A Practical Guide to Personal Freedom",
+    name: "Mock - The Four Agreements: A Practical Guide to Personal Freedom",
     category: "Self-help",
     author: "Don Miguel Ruiz",
     price: 457,
@@ -92,7 +92,7 @@ export const bookData = [
   },
   {
     id: 7,
-    name: "Lonesome Dove: A Novel",
+    name: "Mock - Lonesome Dove: A Novel",
     category: "History",
     author: "Larry McMurtry",
     price: 555,
@@ -107,7 +107,7 @@ export const bookData = [
   },
   {
     id: 8,
-    name: "Pathogenesis: A History of the World in Eight Plagues",
+    name: "Mock - Pathogenesis: A History of the World in Eight Plagues",
     category: "History",
     author: "Jonathan Kennedy",
     price: 65,
@@ -122,7 +122,7 @@ export const bookData = [
   },
   {
     id: 9,
-    name: "1929: Inside the Greatest Crash in Wall Street History",
+    name: "Mock - 1929: Inside the Greatest Crash in Wall Street History",
     category: "History",
     author: "William K. Klingaman",
     price: 620,
@@ -137,7 +137,7 @@ export const bookData = [
   },
   {
     id: 10,
-    name: "Sapiens: A Brief History of Humankind",
+    name: "Mock - Sapiens: A Brief History of Humankind",
     category: "History",
     author: "Yuval Noah Harari",
     price: 490,
@@ -152,7 +152,7 @@ export const bookData = [
   },
   {
     id: 11,
-    name: "Homo Deus: A Brief History of Tomorrow",
+    name: "Mock - Homo Deus: A Brief History of Tomorrow",
     category: "History",
     author: "Yuval Noah Harari",
     price: 506,
@@ -167,7 +167,7 @@ export const bookData = [
   },
   {
     id: 12,
-    name: "Nexus: A Brief History of Information Networks",
+    name: "Mock - Nexus: A Brief History of Information Networks",
     category: "History",
     author: "Yuval Noah Harari",
     price: 490,
@@ -182,7 +182,7 @@ export const bookData = [
   },
   {
     id: 13,
-    name: "Grumpy Monkey",
+    name: "Mock - Grumpy Monkey",
     category: "Children",
     author: "Suzanne Lang",
     price: 65,
@@ -197,7 +197,7 @@ export const bookData = [
   },
   {
     id: 14,
-    name: "See You Later, Alligator",
+    name: "Mock - See You Later, Alligator",
     category: "Children",
     author: "Sally Hopgood",
     price: 359,
@@ -212,7 +212,7 @@ export const bookData = [
   },
   {
     id: 15,
-    name: "There's a Bear on My Chair",
+    name: "Mock - There's a Bear on My Chair",
     category: "Children",
     author: "Ross Collins",
     price: 1833,
@@ -227,7 +227,7 @@ export const bookData = [
   },
   {
     id: 16,
-    name: "Giraffes Can't Dance",
+    name: "Mock - Giraffes Can't Dance",
     category: "Children",
     author: "Giles Andreae",
     price: 269,
@@ -242,7 +242,7 @@ export const bookData = [
   },
   {
     id: 17,
-    name: "Llama Llama Red Pajama",
+    name: "Mock - Llama Llama Red Pajama",
     category: "Children",
     author: "Anna Dewdney",
     price: 163,
@@ -257,7 +257,7 @@ export const bookData = [
   },
   {
     id: 18,
-    name: "Chicka Chicka Boom Boom",
+    name: "Mock - Chicka Chicka Boom Boom",
     category: "Children",
     author: "Bill Martin Jr.",
     price: 261,
@@ -272,7 +272,7 @@ export const bookData = [
   },
   {
     id: 19,
-    name: "The Night We Met",
+    name: "Mock - The Night We Met",
     category: "Romance",
     author: "Zoë Folbigg",
     price: 490.05,
@@ -287,7 +287,7 @@ export const bookData = [
   },
   {
     id: 20,
-    name: "In the Great Quiet: A Novel",
+    name: "Mock - In the Great Quiet: A Novel",
     category: "Romance",
     author: "Laura Vogt",
     price: 130.44,
@@ -302,7 +302,7 @@ export const bookData = [
   },
   {
     id: 21,
-    name: "Hunt the Villain: A Dark MM College Mafia Romance",
+    name: "Mock - Hunt the Villain: A Dark MM College Mafia Romance",
     category: "Romance",
     author: "S.J. Sylvis",
     price: 195.85,
@@ -317,7 +317,7 @@ export const bookData = [
   },
   {
     id: 22,
-    name: "In Her Own League: A Windy City Series Spinoff",
+    name: "Mock - In Her Own League: A Windy City Series Spinoff",
     category: "Romance",
     author: "Liz Tomforde",
     price: 195.53,
@@ -332,7 +332,7 @@ export const bookData = [
   },
   {
     id: 23,
-    name: "Mistakes Were Made: Story Lake, Book 2",
+    name: "Mock - Mistakes Were Made: Story Lake, Book 2",
     category: "Romance",
     author: "Meryl Wilsner",
     price: 195.83,
@@ -347,7 +347,7 @@ export const bookData = [
   },
   {
     id: 24,
-    name: "A Court of Thorns and Roses 6",
+    name: "Mock - A Court of Thorns and Roses 6",
     category: "Romance",
     author: "Sarah J. Maas",
     price: 300.11,
@@ -362,7 +362,7 @@ export const bookData = [
   },
   {
     id: 25,
-    name: "Project Hail Mary",
+    name: "Mock - Project Hail Mary",
     category: "Science fiction & Fantasy",
     author: "Andy Weir",
     price: 490.05,
@@ -377,7 +377,7 @@ export const bookData = [
   },
   {
     id: 26,
-    name: "Dungeon Crawler Carl",
+    name: "Mock - Dungeon Crawler Carl",
     category: "Science fiction & Fantasy",
     author: "Matt Dinniman",
     price: 163.13,
@@ -392,7 +392,7 @@ export const bookData = [
   },
   {
     id: 27,
-    name: "Harry Potter and the Sorcerer's Stone",
+    name: "Mock - Harry Potter and the Sorcerer's Stone",
     category: "Science fiction & Fantasy",
     author: "J.K. Rowling",
     price: 391.98,
@@ -407,7 +407,7 @@ export const bookData = [
   },
   {
     id: 28,
-    name: "Harry Potter and the Goblet of Fire",
+    name: "Mock - Harry Potter and the Goblet of Fire",
     category: "Science fiction & Fantasy",
     author: "J.K. Rowling",
     price: 391.98,

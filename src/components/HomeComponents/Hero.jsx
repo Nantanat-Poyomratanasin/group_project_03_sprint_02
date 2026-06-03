@@ -1,12 +1,10 @@
-import { bookData } from "../../mock-data/bookData";
 import SlideBooks from "../CardComponents/SlideBooks";
 import woodTexture from "../../assets/BgLoginAndRegiter/bglogin.jpg";
 
-export default function Hero() {
-  // เลือกเฉพาะหนังสือที่ถูกปักหมุดให้แสดงในส่วน Trending
-  const trendingBooks = bookData
+export default function Hero({ books = [], isLoading = false, error = "" }) {
+  const trendingBooks = books
     .filter((book) => book.is_highlighted)
-    .slice(0, 5); // เก็บไว้ 5 เล่ม เพื่อให้ 3 เล่มแรกแสดงก่อน และเลื่อนดูเล่มถัดไปได้
+    .slice(0, 5);
 
   return (
     <section
@@ -14,7 +12,6 @@ export default function Hero() {
        lg:items-stretch 
       "
     >
-      {/* ฝั่งซ้าย */}
       <div
         className="
         bg-[#ECE0DC] 
@@ -61,8 +58,6 @@ export default function Hero() {
         </p>
       </div>
 
-      {/* ฝั่งขวา */}
-      {/* กล่องด้านขวาล็อกให้เห็น 3 การ์ดพอดีตามภาพตัวอย่าง */}
       <div
         className="
             flex-1
@@ -83,7 +78,16 @@ export default function Hero() {
         md:px-5 md:py-8 md:max-w-[640px]
         lg:rounded-[36px] lg:px-4 lg:py-2 lg:max-w-[800px]"
         >
-          <SlideBooks books={trendingBooks} variant="hero" visibleCards={3} />
+          {isLoading && <p className="py-10 text-center">Loading books...</p>}
+          {!isLoading && error && (
+            <p className="py-10 text-center text-red-700">{error}</p>
+          )}
+          {!isLoading && !error && trendingBooks.length === 0 && (
+            <p className="py-10 text-center">No highlighted books found.</p>
+          )}
+          {!isLoading && !error && trendingBooks.length > 0 && (
+            <SlideBooks books={trendingBooks} variant="hero" visibleCards={3} />
+          )}
         </div>
       </div>
     </section>
