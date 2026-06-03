@@ -4,8 +4,7 @@ import { DataGrid, GridRowModes } from "@mui/x-data-grid";
 // ==========================================
 // 1. API CLIENT & CONFIGURATION
 // ==========================================
-const API_BASE_URL =
-  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; ;
 
 const apiClient = {
   get: async (endpoint) => {

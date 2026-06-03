@@ -2,8 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
 
 // base URL ของ backend ที่ใช้กับ auth ทั้ง login / logout / get profile
-const API_BASE_URL =
-  "https://group-project-03-sprint-03-backend-1.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // key นี้ใช้เก็บ email ล่าสุดใน localStorage แบบช่วยจำ ไม่ใช่ token หลัก
 const AUTH_EMAIL_KEY = "readlyUserEmail";
 
