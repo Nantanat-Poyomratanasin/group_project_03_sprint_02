@@ -5,7 +5,6 @@ import NavBar from "../components/HomeComponents/NavBar"
 import Footer from "../components/HomeComponents/Footer"
 import { useCart } from "../context/CartContext"
 import { useAuth } from "../context/AuthContext"
-import { getProductImage } from "../lib/productImage"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api"
 const SHIPPING = 50
@@ -274,9 +273,8 @@ export default function PaymentPage({ onBackToHome }) {
               <div className="space-y-4 mb-5">
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex gap-3 items-center">
-                    {/* ใช้ helper กลางเดียวกับหน้าอื่น เพื่อให้หน้าสรุปคำสั่งซื้อคุมโทนภาพเหมือนกัน */}
                     <img
-                      src={getProductImage(item)}
+                      src={item.img}
                       alt={item.name}
                       className="w-12 h-16 object-cover rounded-lg flex-shrink-0"
                     />

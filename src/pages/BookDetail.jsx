@@ -6,7 +6,7 @@ import Footer from "../components/HomeComponents/Footer";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
-import { getProductImage, getProductTitle } from "../lib/productImage";
+import { useFavorites } from "../context/FavoriteContext";
 
 function HeartIcon({ filled }) {
   return (
@@ -167,9 +167,13 @@ export default function BookDetail() {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
-  // Favorite state
-  const [liked, setLiked] = useState(false);
-  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  // Favorite state from context
+  const {
+    toggleFavorite,
+    isBookLiked,
+    loading: favoriteLoading,
+  } = useFavorites();
+  const liked = isBookLiked(id);
 
   // Cart state
   const [cartAdded, setCartAdded] = useState(false);
@@ -238,46 +242,14 @@ export default function BookDetail() {
     };
   }, [id]);
 
-  // ---------- เช็ค favorite ถ้า login แล้ว ----------
-  useEffect(() => {
-    if (!isLoggedIn || authLoading) return;
-    let cancelled = false;
-
-    async function checkFavorite() {
-      try {
-        const data = await apiFetch("/favorites");
-        const items = data.data?.favorite_items || [];
-        if (!cancelled) {
-          setLiked(items.some((item) => item.book_id === id));
-        }
-      } catch {
-        // 404 = ยังไม่เคยมี favorite document
-        if (!cancelled) setLiked(false);
-      }
-    }
-
-    checkFavorite();
-    return () => {
-      cancelled = true;
-    };
-  }, [id, isLoggedIn, authLoading]);
-
   // ---------- toggle favorite ----------
   const handleToggleLike = useCallback(async () => {
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
-    setFavoriteLoading(true);
-    try {
-      await apiFetch(`/favorites/${id}`, { method: "POST" });
-      setLiked((prev) => !prev);
-    } catch (err) {
-      console.error("Favorite toggle failed:", err.message);
-    } finally {
-      setFavoriteLoading(false);
-    }
-  }, [id, isLoggedIn, navigate]);
+    await toggleFavorite(id);
+  }, [id, isLoggedIn, navigate, toggleFavorite]);
 
   // ---------- add to cart ----------
   const handleAddToCart = useCallback(async () => {
@@ -383,8 +355,6 @@ export default function BookDetail() {
   // ---------- แปลงค่าที่อาจเป็น format แปลก ----------
   const rating = Number(book.rating) || 0;
   const price = parsePrice(book.price);
-  const bookTitle = getProductTitle(book);
-  const bookImage = getProductImage(book);
 
   // สร้าง description ถ้าไม่มี
   const description =
@@ -404,12 +374,22 @@ export default function BookDetail() {
             {/* Cover */}
             <div className="flex flex-col items-center gap-4 shrink-0">
               <div className="w-48 h-64 rounded-lg overflow-hidden shadow-md">
-                {/* ใช้ placeholder จากชื่อหนังสือให้โทนภาพเหมือนหน้าการ์ดอื่นทั้งระบบ */}
-                <img
-                  src={bookImage}
-                  alt={bookTitle}
-                  className="w-full h-full object-cover"
-                />
+                {book.img_link ? (
+                  <img
+                    src={book.img_link}
+                    alt={book.book_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{ backgroundColor: "#1e3a8a" }}
+                  >
+                    <span className="text-white text-center font-bold text-base px-4 leading-snug">
+                      {book.book_name}
+                    </span>
+                  </div>
+                )}
               </div>
               <button
                 onClick={handleToggleLike}

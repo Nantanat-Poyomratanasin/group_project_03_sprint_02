@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
-import { getProductImage, getProductTitle } from "../../lib/productImage";
 
 export default function BookCard({ book, variant = "default" }) {
+  // กลับมาใช้รูปจาก data จริงของหนังสือเป็นหลักตามที่ทีมตกลงกัน
+  const defaultImg = "https://via.placeholder.com/150?text=No+Image";
   const { addToCart } = useCart();
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
@@ -13,9 +14,8 @@ export default function BookCard({ book, variant = "default" }) {
   const isHeroVariant = variant === "hero";
   const isGridVariant = variant === "grid";
   const isCategoryVariant = variant === "category";
-  const displayTitle = getProductTitle(book);
-  // ใช้ helper กลางเพื่อให้ทุกหน้าสร้างรูปจากชื่อหนังสือแบบเดียวกัน
-  const displayImage = getProductImage(book);
+  const displayTitle = book.name || book.book_name || "Untitled Book";
+  const displayImage = book.img || book.img_link || defaultImg;
   // แปลง price ที่อาจเป็น MongoDB Decimal128 เป็น number
   const parsePrice = (price) => {
     if (price == null) return 0;
@@ -120,6 +120,11 @@ export default function BookCard({ book, variant = "default" }) {
           <img
             src={displayImage}
             alt={displayTitle}
+            onError={(e) => {
+              if (e.currentTarget.src !== defaultImg) {
+                e.currentTarget.src = defaultImg;
+              }
+            }}
             className="block h-full w-full object-cover transition-transform duration-300 hover:scale-105"
           />
         </div>
