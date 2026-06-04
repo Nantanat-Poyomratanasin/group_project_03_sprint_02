@@ -367,13 +367,13 @@ export default function BookDetail() {
       style={{ backgroundColor: "#FAF4F1" }}
     >
       <NavBar />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-8 space-y-5">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-5 sm:px-6 sm:py-8 space-y-5">
         {/* Book card */}
-        <div className="bg-white rounded-2xl p-7 shadow-sm">
-          <div className="flex gap-8">
+        <div className="bg-white rounded-2xl p-4 sm:p-7 shadow-sm">
+          <div className="flex flex-col items-center md:flex-row md:items-start gap-5 md:gap-8">
             {/* Cover */}
-            <div className="flex flex-col items-center gap-4 shrink-0">
-              <div className="w-48 h-64 rounded-lg overflow-hidden shadow-md">
+            <div className="flex flex-col items-center gap-3 sm:gap-4 shrink-0">
+              <div className="w-36 h-52 sm:w-48 sm:h-64 rounded-lg overflow-hidden shadow-md">
                 {book.img_link ? (
                   <img
                     src={book.img_link}
@@ -394,7 +394,7 @@ export default function BookDetail() {
               <button
                 onClick={handleToggleLike}
                 disabled={favoriteLoading}
-                className="flex items-center gap-2 px-8 py-2 rounded-full border text-sm transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 sm:px-8 py-2 rounded-full border text-sm transition-colors disabled:opacity-50"
                 style={{
                   borderColor: liked ? "#A66858" : "#d4c4b4",
                   color: liked ? "#A66858" : "#8b7355",
@@ -407,7 +407,7 @@ export default function BookDetail() {
             </div>
 
             {/* Info */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 w-full">
               <span
                 className="inline-block text-xs px-3 py-1 rounded-full mb-3"
                 style={{ backgroundColor: "#EEE1DB", color: "#A66858" }}
@@ -415,7 +415,7 @@ export default function BookDetail() {
                 {book.category}
               </span>
               <h1
-                className="text-2xl font-bold mb-0.5 font-['Playfair_Display']"
+                className="text-xl sm:text-2xl font-bold mb-0.5 font-['Playfair_Display']"
                 style={{ color: "#2c1810" }}
               >
                 {book.book_name}
@@ -448,7 +448,7 @@ export default function BookDetail() {
                 {description}
               </p>
               <p
-                className="text-3xl font-bold mb-4 font-['Playfair_Display']"
+                className="text-2xl sm:text-3xl font-bold mb-4 font-['Playfair_Display']"
                 style={{ color: "#A66858" }}
               >
                 {price.toLocaleString("th-TH", {
@@ -468,9 +468,9 @@ export default function BookDetail() {
         </div>
 
         {/* Book metadata */}
-        <div className="bg-white rounded-2xl px-6 py-5 shadow-sm">
-          <div className="flex divide-x divide-gray-200">
-            <div className="flex-1 flex flex-col items-center gap-1">
+        <div className="bg-white rounded-2xl px-4 sm:px-6 py-4 sm:py-5 shadow-sm">
+          <div className="flex flex-wrap justify-center gap-y-3 sm:flex-nowrap divide-x divide-gray-200">
+            <div className="w-1/3 sm:flex-1 flex flex-col items-center gap-1">
               <span className="text-xs" style={{ color: "#9b8b7a" }}>
                 Pages
               </span>
@@ -478,7 +478,7 @@ export default function BookDetail() {
                 {book.page || "—"}
               </span>
             </div>
-            <div className="flex-1 flex flex-col items-center gap-1">
+            <div className="w-1/3 sm:flex-1 flex flex-col items-center gap-1">
               <span className="text-xs" style={{ color: "#9b8b7a" }}>
                 Language
               </span>
@@ -486,7 +486,7 @@ export default function BookDetail() {
                 {book.language || "—"}
               </span>
             </div>
-            <div className="flex-1 flex flex-col items-center gap-1">
+            <div className="w-1/3 sm:flex-1 flex flex-col items-center gap-1">
               <span className="text-xs" style={{ color: "#9b8b7a" }}>
                 Publisher
               </span>
