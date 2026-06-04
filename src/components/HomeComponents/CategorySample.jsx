@@ -63,7 +63,9 @@ export default function CategorySample({
           <p className="py-10 text-center">No books found.</p>
         )}
         {!isLoading && !error && filteredBooks.length > 0 && (
-          <SlideBooks books={filteredBooks} />
+          // ใช้ variant แยกสำหรับ category โดยเฉพาะ
+          // เพื่อไม่ให้ขนาดการ์ดของส่วนนี้ไปกระทบ Hero หรือส่วนอื่น
+          <SlideBooks books={filteredBooks} variant="category" visibleCards={5} />
         )}
       </div>
     </div>
