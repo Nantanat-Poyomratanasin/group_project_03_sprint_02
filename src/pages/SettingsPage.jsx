@@ -65,29 +65,26 @@ export default function SettingsPage() {
      Initial DATA
   ========================= */
 
-  const initialData = {
-    fullName: "Robert Johnson",
-    username: "Robert.username",
-    dob: "1999-09-12",
-    email: "Robert.username@gmail.com",
-    phone: "0811111111",
-
-    address:
-      "45/8 ถนนสุขุมวิท 38 แขวงพระโขนง เขตคลองเตย Bangkok, Thailand 10900",
-
-    cardholder: "ROBERT JOHNSON",
-    cardNumber: "XXXX XXXX XXXX 123",
-    expiry: "05/30",
-    cvv: "123",
+  const emptyData = {
+    fullName: "",
+    username: "",
+    dob: "",
+    email: "",
+    phone: "",
+    address: "",
+    cardholder: "",
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
   };
 
   // แสดงข้อมูลบนหน้า settings โดยใช้ formData เป็นตัวเก็บข้อมูลหลัก
   // และ profileDraft กับ paymentDraft เป็นตัวเก็บข้อมูลชั่วคราวเมื่อแก้ไข
-  const [formData, setFormData] = useState(initialData);
+  const [formData, setFormData] = useState(emptyData);
 
-  const [profileDraft, setProfileDraft] = useState(initialData);
+  const [profileDraft, setProfileDraft] = useState(emptyData);
 
-  const [paymentDraft, setPaymentDraft] = useState(initialData);
+  const [paymentDraft, setPaymentDraft] = useState(emptyData);
 
   const [addressDraft, setAddressDraft] = useState({
     building: "",
@@ -101,10 +98,12 @@ export default function SettingsPage() {
 
   const [profile, setProfile] = useState(null);
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/users/me", {
+        const response = await fetch(`${API_BASE_URL}/users/me`, {
           credentials: "include",
         });
 
@@ -267,22 +266,19 @@ export default function SettingsPage() {
                 {/* SAVE */}
                 <button
                   onClick={async () => {
-                    const response = await fetch(
-                      "http://localhost:3000/api/users/me",
-                      {
-                        method: "PATCH",
-                        credentials: "include",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                          fullName: profileDraft.fullName,
-                          username: profileDraft.username,
-                          email: profileDraft.email,
-                          phone: profileDraft.phone,
-                        }),
+                    const response = await fetch(`${API_BASE_URL}/users/me`, {
+                      method: "PATCH",
+                      credentials: "include",
+                      headers: {
+                        "Content-Type": "application/json",
                       },
-                    );
+                      body: JSON.stringify({
+                        fullName: profileDraft.fullName,
+                        username: profileDraft.username,
+                        email: profileDraft.email,
+                        phone: profileDraft.phone,
+                      }),
+                    });
 
                     const result = await response.json();
 
@@ -400,24 +396,21 @@ export default function SettingsPage() {
                         alert("CVV must be exactly 3 digits");
                         return;
                       }
-                      const response = await fetch(
-                        "http://localhost:3000/api/users/me",
-                        {
-                          method: "PATCH",
-                          credentials: "include",
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({
-                            card: {
-                              cardholder: paymentDraft.cardholder,
-                              cardNumber: paymentDraft.cardNumber,
-                              expiry: paymentDraft.expiry,
-                              cvv: paymentDraft.cvv,
-                            },
-                          }),
+                      const response = await fetch(`${API_BASE_URL}/users/me`, {
+                        method: "PATCH",
+                        credentials: "include",
+                        headers: {
+                          "Content-Type": "application/json",
                         },
-                      );
+                        body: JSON.stringify({
+                          card: {
+                            cardholder: paymentDraft.cardholder,
+                            cardNumber: paymentDraft.cardNumber,
+                            expiry: paymentDraft.expiry,
+                            cvv: paymentDraft.cvv,
+                          },
+                        }),
+                      });
 
                       const result = await response.json();
 
@@ -764,27 +757,24 @@ export default function SettingsPage() {
             <div className="flex justify-center gap-4 mt-8">
               <button
                 onClick={async () => {
-                  const response = await fetch(
-                    "http://localhost:3000/api/users/me",
-                    {
-                      method: "PATCH",
-                      credentials: "include",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        address: {
-                          building: addressDraft.building,
-                          road: addressDraft.road,
-                          province: addressDraft.province,
-                          district: addressDraft.district,
-                          subdistrict: addressDraft.subDistrict,
-                          postcode: addressDraft.postCode,
-                          country: addressDraft.country,
-                        },
-                      }),
+                  const response = await fetch(`${API_BASE_URL}/users/me`, {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
                     },
-                  );
+                    body: JSON.stringify({
+                      address: {
+                        building: addressDraft.building,
+                        road: addressDraft.road,
+                        province: addressDraft.province,
+                        district: addressDraft.district,
+                        subdistrict: addressDraft.subDistrict,
+                        postcode: addressDraft.postCode,
+                        country: addressDraft.country,
+                      },
+                    }),
+                  });
 
                   const result = await response.json();
 
@@ -887,19 +877,16 @@ export default function SettingsPage() {
                     return;
                   }
 
-                  const response = await fetch(
-                    "http://localhost:3000/api/feedback",
-                    {
-                      method: "POST",
-                      credentials: "include",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        message: feedbackData.detail,
-                      }),
+                  const response = await fetch(`${API_BASE_URL}/feedback`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
                     },
-                  );
+                    body: JSON.stringify({
+                      message: feedbackData.detail,
+                    }),
+                  });
 
                   const result = await response.json();
 
@@ -1027,19 +1014,16 @@ export default function SettingsPage() {
                     return;
                   }
 
-                  const response = await fetch(
-                    "http://localhost:3000/api/users/me",
-                    {
-                      method: "PATCH",
-                      credentials: "include",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        password: passwordData.newPassword,
-                      }),
+                  const response = await fetch(`${API_BASE_URL}/users/me`, {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
                     },
-                  );
+                    body: JSON.stringify({
+                      password: passwordData.newPassword,
+                    }),
+                  });
 
                   const result = await response.json();
 
