@@ -225,7 +225,7 @@ export default function SettingsPage() {
           />
         ) : (
           <div className="w-full bg-white rounded-full px-4 py-2 text-[#878584]">
-            {formData[field]}
+            {formData[field] || "-"}
           </div>
         )}
       </div>
@@ -538,7 +538,7 @@ export default function SettingsPage() {
                       <span className="text-[#878584]">Cardholder Name</span>
 
                       <span className="text-[#878584]">
-                        {formData.cardholder}
+                        {formData.cardholder || "-"}
                       </span>
                     </div>
 
@@ -548,14 +548,16 @@ export default function SettingsPage() {
                       </span>
 
                       <span className="text-[#878584]">
-                        {formData.cardNumber}
+                        {formData.cardNumber || "-"}
                       </span>
                     </div>
 
                     <div className="flex justify-between">
                       <span className="text-[#878584]">Expiration Date</span>
 
-                      <span className="text-[#878584]">{formData.expiry}</span>
+                      <span className="text-[#878584]">
+                        {formData.expiry || "-"}
+                      </span>
                     </div>
 
                     <div className="flex justify-between">
