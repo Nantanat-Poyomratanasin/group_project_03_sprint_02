@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useCart } from "../../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getProductImage } from "../../lib/productImage";
 import { useBooks } from "../../context/BookContext";
 
 export default function NavBar() {
@@ -101,8 +102,9 @@ export default function NavBar() {
                             className="flex items-center gap-4 p-3 hover:bg-[#faf6f4] transition-colors"
                             onClick={() => setSearchTerm("")}
                           >
+                            {/* รูปใน search dropdown ก็ใช้ placeholder กลางเหมือนกัน */}
                             <img
-                              src={book.img}
+                              src={getProductImage(book)}
                               className="w-8 h-12 object-cover rounded shadow-sm"
                               alt=""
                             />

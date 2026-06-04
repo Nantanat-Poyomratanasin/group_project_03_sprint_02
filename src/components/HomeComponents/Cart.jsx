@@ -1,6 +1,7 @@
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { getProductImage } from "../../lib/productImage";
 
 function formatPrice(price) {
   return `$${price.toFixed(2)}`;
@@ -66,8 +67,9 @@ export default function Cart() {
                     key={item.id}
                     className="flex items-center gap-4 rounded-[24px] bg-white/70 p-4 shadow-sm"
                   >
+                    {/* ใช้ helper กลางเพื่อให้รูปใน cart คุมโทนเดียวกับส่วนอื่น */}
                     <img
-                      src={item.img}
+                      src={getProductImage(item)}
                       alt={item.name}
                       className="h-20 w-16 rounded-xl object-cover"
                     />

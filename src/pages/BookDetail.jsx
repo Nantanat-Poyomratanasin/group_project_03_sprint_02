@@ -6,6 +6,7 @@ import Footer from "../components/HomeComponents/Footer";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { getProductImage, getProductTitle } from "../lib/productImage";
 
 function HeartIcon({ filled }) {
   return (
@@ -382,6 +383,8 @@ export default function BookDetail() {
   // ---------- แปลงค่าที่อาจเป็น format แปลก ----------
   const rating = Number(book.rating) || 0;
   const price = parsePrice(book.price);
+  const bookTitle = getProductTitle(book);
+  const bookImage = getProductImage(book);
 
   // สร้าง description ถ้าไม่มี
   const description =
@@ -401,22 +404,12 @@ export default function BookDetail() {
             {/* Cover */}
             <div className="flex flex-col items-center gap-4 shrink-0">
               <div className="w-48 h-64 rounded-lg overflow-hidden shadow-md">
-                {book.img_link ? (
-                  <img
-                    src={book.img_link}
-                    alt={book.book_name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={{ backgroundColor: "#1e3a8a" }}
-                  >
-                    <span className="text-white text-center font-bold text-base px-4 leading-snug">
-                      {book.book_name}
-                    </span>
-                  </div>
-                )}
+                {/* ใช้ placeholder จากชื่อหนังสือให้โทนภาพเหมือนหน้าการ์ดอื่นทั้งระบบ */}
+                <img
+                  src={bookImage}
+                  alt={bookTitle}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <button
                 onClick={handleToggleLike}
