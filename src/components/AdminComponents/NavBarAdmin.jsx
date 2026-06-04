@@ -1,9 +1,12 @@
+import { useAuth } from "../../context/AuthContext";
 import { UserCircle, LogOut } from "lucide-react";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function NavBarAdmin({ activeTab, setActiveTab }) {
   // State to manage the visibility of the logout popup
   const [showDropdown, setShowDropdown] = useState(false);
+  const { logout } = useAuth();
 
   // Array of purely names, state is handled by the parent component now
   const navItems = [
@@ -12,11 +15,23 @@ export function NavBarAdmin({ activeTab, setActiveTab }) {
     "User Catalog",
     "Order management",
     "Coupon code",
-    "Feedbacks"
+    "Feedbacks",
   ];
 
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setShowDropdown(false);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
-    <nav className="flex items-center justify-between px-6 py-3 border-b-2 border-black bg-white overflow-x-auto">
+    <nav className="flex items-center justify-between px-6 py-9 border-b-2 border-black bg-white overflow-x-auto">
       {/* Logo */}
       <div className="shrink-0">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">
