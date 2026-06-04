@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../lib/api";
 
 export default function BookCard({ book, variant = "default" }) {
+  // กลับมาใช้รูปจาก data จริงของหนังสือเป็นหลักตามที่ทีมตกลงกัน
   const defaultImg = "https://via.placeholder.com/150?text=No+Image";
   const { addToCart } = useCart();
   const { user, isLoggedIn } = useAuth();
@@ -12,6 +13,9 @@ export default function BookCard({ book, variant = "default" }) {
   const [cartAdded, setCartAdded] = useState(false);
   const isHeroVariant = variant === "hero";
   const isGridVariant = variant === "grid";
+  const isCategoryVariant = variant === "category";
+  const displayTitle = book.name || book.book_name || "Untitled Book";
+  const displayImage = book.img || book.img_link || defaultImg;
   // แปลง price ที่อาจเป็น MongoDB Decimal128 เป็น number
   const parsePrice = (price) => {
     if (price == null) return 0;
@@ -94,7 +98,9 @@ export default function BookCard({ book, variant = "default" }) {
           ? "min-h-[380px] w-[260px] rounded-[28px] p-4 sm:w-[280px] sm:rounded-[30px] sm:p-5  lg:w-[240px] lg:rounded-[34px] lg:p-4"
           : isGridVariant
             ? "flex h-full min-h-[420px] w-full rounded-[24px] p-4 sm:min-h-[410px] sm:rounded-[26px] lg:min-h-[430px] lg:rounded-[28px] lg:p-5"
-            : "h-[360px] w-[220px] rounded-[24px] p-3 sm:h-[360px] sm:w-[170px] sm:rounded-[24px] sm:p-3 lg:h-[392px] lg:w-[188px] lg:rounded-[28px] lg:p-4"
+            : isCategoryVariant
+              ? "min-h-[404px] w-[220px] rounded-[26px] p-4 sm:min-h-[384px] sm:w-[170px] sm:rounded-[24px] sm:p-3 lg:min-h-[404px] lg:w-[196px] lg:rounded-[28px] lg:p-4"
+              : "h-[360px] w-[220px] rounded-[24px] p-3 sm:h-[360px] sm:w-[170px] sm:rounded-[24px] sm:p-3 lg:h-[392px] lg:w-[188px] lg:rounded-[28px] lg:p-4"
       }`}
     >
       <Link to={`/bookDetail/${book._id || book.id}`} className="block">
@@ -106,18 +112,20 @@ export default function BookCard({ book, variant = "default" }) {
               ? "mb-3 h-[240px] rounded-xl sm:h-[280px] sm:rounded-2xl  lg:h-[200px] lg:w-[160px] "
               : isGridVariant
                 ? "mb-4 aspect-[4/5] w-full rounded-[18px] sm:rounded-[20px]"
-                : "mb-3 h-[220px] rounded-xl sm:h-[210px] lg:h-[238px]"
+                : isCategoryVariant
+                  ? "mb-3 h-[250px] w-full rounded-[20px] sm:h-[210px] lg:h-[238px]"
+                  : "mb-3 h-[220px] w-full rounded-xl sm:h-[210px] lg:h-[238px]"
           }`}
         >
           <img
-            src={book.img || defaultImg}
-            alt={book.name || "Book"}
+            src={displayImage}
+            alt={displayTitle}
             onError={(e) => {
               if (e.currentTarget.src !== defaultImg) {
                 e.currentTarget.src = defaultImg;
               }
             }}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            className="block h-full w-full object-cover transition-transform duration-300 hover:scale-105"
           />
         </div>
       </Link>
@@ -130,10 +138,12 @@ export default function BookCard({ book, variant = "default" }) {
                 ? "text-[1rem] sm:text-[1.02rem] lg:text-[1.1rem]"
                 : isGridVariant
                   ? "text-[1rem] sm:text-[1rem] lg:text-[1.05rem]"
-                  : "text-[0.88rem] sm:text-[0.9rem] lg:text-[0.98rem]"
+                  : isCategoryVariant
+                    ? "text-[0.98rem] sm:text-[0.9rem] lg:text-[1rem]"
+                    : "text-[0.88rem] sm:text-[0.9rem] lg:text-[0.98rem]"
             }`}
           >
-            {book.name}
+            {displayTitle}
           </h3>
         </Link>
         <div
@@ -147,7 +157,9 @@ export default function BookCard({ book, variant = "default" }) {
                 ? "text-sm font-semibold sm:text-sm lg:text-base"
                 : isGridVariant
                   ? "text-sm font-semibold"
-                  : "text-xs font-semibold sm:text-xs lg:text-sm"
+                  : isCategoryVariant
+                    ? "text-sm font-semibold"
+                    : "text-xs font-semibold sm:text-xs lg:text-sm"
             }
           >
             {roundedRating}
@@ -158,7 +170,9 @@ export default function BookCard({ book, variant = "default" }) {
                 ? "text-sm tracking-[0.12em] text-[#1F2432] sm:text-sm lg:text-base"
                 : isGridVariant
                   ? "text-xs tracking-[0.11em] text-[#1F2432] sm:text-sm"
-                  : "text-[0.68rem] tracking-[0.1em] text-[#1F2432] sm:text-[0.65rem] lg:text-xs"
+                  : isCategoryVariant
+                    ? "text-xs tracking-[0.11em] text-[#1F2432] sm:text-xs lg:text-sm"
+                    : "text-[0.68rem] tracking-[0.1em] text-[#1F2432] sm:text-[0.65rem] lg:text-xs"
             }
           >
             <span className="relative inline-block leading-none text-[#D4C5BC]">
@@ -179,7 +193,9 @@ export default function BookCard({ book, variant = "default" }) {
               ? "mb-1 mt-1"
               : isGridVariant
                 ? "mb-4 mt-4"
-                : "mb-3 mt-3"
+                : isCategoryVariant
+                  ? "mb-3 mt-3"
+                  : "mb-3 mt-3"
           }`}
         >
           <p
@@ -188,7 +204,9 @@ export default function BookCard({ book, variant = "default" }) {
                 ? "text-[0.95rem] font-bold text-[#1F2432] sm:text-[0.95rem] lg:text-[1rem]"
                 : isGridVariant
                   ? "text-[1.05rem] font-bold text-[#1F2432]"
-                  : "text-[1rem] font-bold text-[#1F2432]"
+                  : isCategoryVariant
+                    ? "text-[0.95rem] font-bold text-[#1F2432] lg:text-[1rem]"
+                    : "text-[1rem] font-bold text-[#1F2432]"
             }
           >
             {formattedDiscountPrice} THB
@@ -217,7 +235,9 @@ export default function BookCard({ book, variant = "default" }) {
               ? "px-4 py-2.5 text-xs sm:px-4 sm:py-3 sm:text-sm"
               : isGridVariant
                 ? "mt-auto px-4 py-2.5 text-sm"
-                : "mt-3 px-3 py-2 text-[0.68rem] sm:text-[0.68rem] lg:text-[0.7rem]"
+                : isCategoryVariant
+                  ? "mt-4 px-3 py-2.5 text-[0.78rem] sm:mt-auto sm:text-[0.72rem] lg:text-[0.78rem]"
+                  : "mt-3 px-3 py-2 text-[0.68rem] sm:text-[0.68rem] lg:text-[0.7rem]"
           }`}
         >
           {cartAdded ? "Added!" : "Add to Cart"}

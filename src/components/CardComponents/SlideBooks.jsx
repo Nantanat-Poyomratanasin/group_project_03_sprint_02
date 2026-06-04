@@ -13,20 +13,22 @@ export default function SlideBooks({
     typeof window !== "undefined" ? window.innerWidth : 1440,
   );
   const isHeroVariant = variant === "hero";
+  const isCategoryVariant = variant === "category";
   // กำหนดขนาด card และจำนวนใบที่ต้องเห็นตาม breakpoint
-  let cardWidth = isHeroVariant ? 240 : 188;
-  let cardGap = isHeroVariant ? 12 : 16;
+  // ขนาด category ถูกแยกออกมาโดยเฉพาะ เพื่อไม่กระทบ slider ส่วนอื่น
+  let cardWidth = isHeroVariant ? 240 : isCategoryVariant ? 196 : 188;
+  let cardGap = isHeroVariant ? 12 : isCategoryVariant ? 14 : 16;
   let cardsPerView = visibleCards;
 
   if (screenWidth < 640) {
     // mobile: เห็นแค่ 1 ใบ และลดระยะห่างเพื่อไม่ให้แน่นจอเกินไป
-    cardWidth = isHeroVariant ? 260 : 220;
+    cardWidth = isHeroVariant ? 260 : isCategoryVariant ? 220 : 220;
     cardGap = 0;
     cardsPerView = 1;
   } else if (screenWidth < 1024) {
     // tablet: Hero เห็น 2 ใบ ส่วน Category เห็น 3 ใบตามตัวอย่าง
-    cardWidth = isHeroVariant ? 280 : 170;
-    cardGap = isHeroVariant ? 20 : 18;
+    cardWidth = isHeroVariant ? 280 : isCategoryVariant ? 170 : 170;
+    cardGap = isHeroVariant ? 20 : isCategoryVariant ? 18 : 18;
     cardsPerView = isHeroVariant ? 2 : 3;
   }
 
@@ -95,7 +97,11 @@ export default function SlideBooks({
     // วาง slider กลาง section และเผื่อพื้นที่ลูกศรซ้ายขวาให้สมดุลกัน
     <div
       className={`relative mx-auto w-full ${
-        isHeroVariant ? "max-w-[820px]" : "max-w-[1100px] px-3 sm:px-6 lg:px-8"
+        isHeroVariant
+          ? "max-w-[820px]"
+          : isCategoryVariant
+            ? "max-w-[1080px] px-2 sm:px-4 lg:px-5"
+            : "max-w-[1100px] px-3 sm:px-6 lg:px-8"
       }`}
     >
       {canScrollLeft && (
@@ -132,20 +138,25 @@ export default function SlideBooks({
           width: `${viewportWidth}px`,
           maxWidth: "100%",
           gap: `${cardGap}px`,
+          // category slider ใช้ padding นุ่มกว่านิดเพื่อให้ card ดูไม่เบียดขอบกล่อง
           paddingTop: isHeroVariant
             ? "16px"
             : screenWidth < 640
               ? "12px"
-              : "20px",
+              : isCategoryVariant
+                ? "10px"
+                : "20px",
           paddingBottom: isHeroVariant
             ? "16px"
             : screenWidth < 640
               ? "12px"
-              : "20px",
+              : isCategoryVariant
+                ? "10px"
+                : "20px",
         }}
       >
         {books.map((book) => (
-          <div key={book.id} className="flex-none ">
+          <div key={book.id || book._id} className="flex-none ">
             <BookCard book={book} variant={variant} />
           </div>
         ))}

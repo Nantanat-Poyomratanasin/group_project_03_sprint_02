@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-import { Phone, Headphones, CreditCard, Lock } from "lucide-react";
+import { Phone, Headphones, CreditCard, Lock, Eye, EyeOff } from "lucide-react";
 
 import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
@@ -22,7 +22,6 @@ export default function SettingsPage() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
@@ -35,6 +34,22 @@ export default function SettingsPage() {
     name: "",
     detail: "",
   });
+
+  const resetPasswordModal = () => {
+    setPasswordData({
+      newPassword: "",
+      confirmPassword: "",
+    });
+
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+
+    setIsPasswordModalOpen(false);
+  };
+
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   /* =========================
      REFS --> manage click outside for profile, payment, and modals
@@ -50,29 +65,26 @@ export default function SettingsPage() {
      Initial DATA
   ========================= */
 
-  const initialData = {
-    fullName: "Robert Johnson",
-    username: "Robert.username",
-    dob: "1999-09-12",
-    email: "Robert.username@gmail.com",
-    phone: "0811111111",
-
-    address:
-      "45/8 ถนนสุขุมวิท 38 แขวงพระโขนง เขตคลองเตย Bangkok, Thailand 10900",
-
-    cardholder: "ROBERT JOHNSON",
-    cardNumber: "XXXX XXXX XXXX 123",
-    expiry: "05/30",
-    cvv: "123",
+  const emptyData = {
+    fullName: "",
+    username: "",
+    dob: "",
+    email: "",
+    phone: "",
+    address: "",
+    cardholder: "",
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
   };
 
   // แสดงข้อมูลบนหน้า settings โดยใช้ formData เป็นตัวเก็บข้อมูลหลัก
   // และ profileDraft กับ paymentDraft เป็นตัวเก็บข้อมูลชั่วคราวเมื่อแก้ไข
-  const [formData, setFormData] = useState(initialData);
+  const [formData, setFormData] = useState(emptyData);
 
-  const [profileDraft, setProfileDraft] = useState(initialData);
+  const [profileDraft, setProfileDraft] = useState(emptyData);
 
-  const [paymentDraft, setPaymentDraft] = useState(initialData);
+  const [paymentDraft, setPaymentDraft] = useState(emptyData);
 
   const [addressDraft, setAddressDraft] = useState({
     building: "",
@@ -86,10 +98,13 @@ export default function SettingsPage() {
 
   const [profile, setProfile] = useState(null);
 
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/users/me", {
+        const response = await fetch(`${API_BASE_URL}/users/me`, {
           credentials: "include",
         });
 
@@ -252,22 +267,19 @@ export default function SettingsPage() {
                 {/* SAVE */}
                 <button
                   onClick={async () => {
-                    const response = await fetch(
-                      "http://localhost:3000/api/users/me",
-                      {
-                        method: "PATCH",
-                        credentials: "include",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                          fullName: profileDraft.fullName,
-                          username: profileDraft.username,
-                          email: profileDraft.email,
-                          phone: profileDraft.phone,
-                        }),
+                    const response = await fetch(`${API_BASE_URL}/users/me`, {
+                      method: "PATCH",
+                      credentials: "include",
+                      headers: {
+                        "Content-Type": "application/json",
                       },
-                    );
+                      body: JSON.stringify({
+                        fullName: profileDraft.fullName,
+                        username: profileDraft.username,
+                        email: profileDraft.email,
+                        phone: profileDraft.phone,
+                      }),
+                    });
 
                     const result = await response.json();
 
@@ -385,24 +397,21 @@ export default function SettingsPage() {
                         alert("CVV must be exactly 3 digits");
                         return;
                       }
-                      const response = await fetch(
-                        "http://localhost:3000/api/users/me",
-                        {
-                          method: "PATCH",
-                          credentials: "include",
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({
-                            card: {
-                              cardholder: paymentDraft.cardholder,
-                              cardNumber: paymentDraft.cardNumber,
-                              expiry: paymentDraft.expiry,
-                              cvv: paymentDraft.cvv,
-                            },
-                          }),
+                      const response = await fetch(`${API_BASE_URL}/users/me`, {
+                        method: "PATCH",
+                        credentials: "include",
+                        headers: {
+                          "Content-Type": "application/json",
                         },
-                      );
+                        body: JSON.stringify({
+                          card: {
+                            cardholder: paymentDraft.cardholder,
+                            cardNumber: paymentDraft.cardNumber,
+                            expiry: paymentDraft.expiry,
+                            cvv: paymentDraft.cvv,
+                          },
+                        }),
+                      });
 
                       const result = await response.json();
 
@@ -749,27 +758,24 @@ export default function SettingsPage() {
             <div className="flex justify-center gap-4 mt-8">
               <button
                 onClick={async () => {
-                  const response = await fetch(
-                    "http://localhost:3000/api/users/me",
-                    {
-                      method: "PATCH",
-                      credentials: "include",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        address: {
-                          building: addressDraft.building,
-                          road: addressDraft.road,
-                          province: addressDraft.province,
-                          district: addressDraft.district,
-                          subdistrict: addressDraft.subDistrict,
-                          postcode: addressDraft.postCode,
-                          country: addressDraft.country,
-                        },
-                      }),
+                  const response = await fetch(`${API_BASE_URL}/users/me`, {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
                     },
-                  );
+                    body: JSON.stringify({
+                      address: {
+                        building: addressDraft.building,
+                        road: addressDraft.road,
+                        province: addressDraft.province,
+                        district: addressDraft.district,
+                        subdistrict: addressDraft.subDistrict,
+                        postcode: addressDraft.postCode,
+                        country: addressDraft.country,
+                      },
+                    }),
+                  });
 
                   const result = await response.json();
 
@@ -866,8 +872,34 @@ export default function SettingsPage() {
             <div className="flex justify-center gap-4 mt-8">
               {/* SEND */}
               <button
-                onClick={() => {
-                  console.log("Feedback:", feedbackData);
+                onClick={async () => {
+                  if (!feedbackData.detail.trim()) {
+                    alert("Please enter feedback");
+                    return;
+                  }
+
+                  const response = await fetch(`${API_BASE_URL}/feedback`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      message: feedbackData.detail,
+                    }),
+                  });
+
+                  const result = await response.json();
+
+                  console.log("STATUS =", response.status);
+                  console.log("RESULT =", result);
+
+                  if (!response.ok) {
+                    alert(
+                      result.error || result.message || "Send feedback failed",
+                    );
+                    return;
+                  }
 
                   setIsFeedbackOpen(false);
 
@@ -908,7 +940,7 @@ export default function SettingsPage() {
           >
             {/* CLOSE */}
             <button
-              onClick={() => setIsPasswordModalOpen(false)}
+              onClick={resetPasswordModal}
               className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 text-2xl"
             >
               ×
@@ -923,22 +955,9 @@ export default function SettingsPage() {
             </div>
 
             {/* FORM */}
-            <div className="space-y-4">
+            <div className="relative gap-4 mb-4">
               <input
-                type="password"
-                placeholder="Current Password"
-                value={passwordData.currentPassword}
-                onChange={(e) =>
-                  setPasswordData((prev) => ({
-                    ...prev,
-                    currentPassword: e.target.value,
-                  }))
-                }
-                className="w-full border border-[#d9a99a] rounded-xl px-4 py-2"
-              />
-
-              <input
-                type="password"
+                type={showNewPassword ? "text" : "password"}
                 placeholder="New Password"
                 value={passwordData.newPassword}
                 onChange={(e) =>
@@ -947,11 +966,20 @@ export default function SettingsPage() {
                     newPassword: e.target.value,
                   }))
                 }
-                className="w-full border border-[#d9a99a] rounded-xl px-4 py-2"
+                className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 pr-12"
               />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
+            <div className="relative">
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm Password"
                 value={passwordData.confirmPassword}
                 onChange={(e) =>
@@ -960,17 +988,57 @@ export default function SettingsPage() {
                     confirmPassword: e.target.value,
                   }))
                 }
-                className="w-full border border-[#d9a99a] rounded-xl px-4 py-2"
+                className="w-full border border-[#d9a99a] rounded-xl px-4 py-2 pr-12"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             {/* BUTTONS */}
             <div className="flex justify-center gap-4 mt-8">
               <button
-                onClick={() => {
-                  console.log(passwordData);
+                onClick={async () => {
+                  if (
+                    passwordData.newPassword !== passwordData.confirmPassword
+                  ) {
+                    alert("Passwords do not match");
+                    return;
+                  }
 
-                  setIsPasswordModalOpen(false);
+                  if (passwordData.newPassword.length < 8) {
+                    alert("Password must be at least 8 characters");
+                    return;
+                  }
+
+                  const response = await fetch(`${API_BASE_URL}/users/me`, {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      password: passwordData.newPassword,
+                    }),
+                  });
+
+                  const result = await response.json();
+
+                  if (!response.ok) {
+                    alert(result.error || "Update password failed");
+                    return;
+                  }
+
+                  setPasswordData({
+                    newPassword: "",
+                    confirmPassword: "",
+                  });
+
+                  resetPasswordModal();
                 }}
                 className="px-10 py-2.5 bg-[#b67662] text-white rounded-full hover:bg-[#9f6453]"
               >
@@ -978,7 +1046,7 @@ export default function SettingsPage() {
               </button>
 
               <button
-                onClick={() => setIsPasswordModalOpen(false)}
+                onClick={resetPasswordModal}
                 className="px-10 py-2.5 border border-[#b67662] text-[#b67662] rounded-full hover:bg-[#f3e4df]"
               >
                 Cancel
