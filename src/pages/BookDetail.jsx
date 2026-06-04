@@ -168,7 +168,11 @@ export default function BookDetail() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   // Favorite state from context
-  const { toggleFavorite, isBookLiked, loading: favoriteLoading } = useFavorites();
+  const {
+    toggleFavorite,
+    isBookLiked,
+    loading: favoriteLoading,
+  } = useFavorites();
   const liked = isBookLiked(id);
 
   // Cart state
