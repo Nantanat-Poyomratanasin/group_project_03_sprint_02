@@ -1,29 +1,35 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CategoryFilter from "../CategoryFilter";
 import SlideBooks from "../CardComponents/SlideBooks";
-import { bookData } from "../../mock-data/bookData";
 import { Link } from "react-router-dom";
 
-export default function CategorySample() {
-  const categories = [
-    "Romance",
-    "Science fiction & Fantasy",
-    "Self-help",
-    "History",
-    "Children",
-  ];
-  const [activeCategory, setActiveCategory] = useState("Romance");
+export default function CategorySample({
+  books = [],
+  isLoading = false,
+  error = "",
+}) {
+  const categories = useMemo(() => {
+    return [...new Set(books.map((book) => book.category).filter(Boolean))];
+  }, [books]);
+
+  const [activeCategory, setActiveCategory] = useState("");
+
+  useEffect(() => {
+    if (!activeCategory && categories.length > 0) {
+      setActiveCategory(categories[0]);
+    }
+  }, [activeCategory, categories]);
 
   const filteredBooks = useMemo(() => {
     // ถ้าเลือก All ให้ใช้หนังสือทั้งหมด ไม่งั้นค่อยกรองตามหมวด
     const matchedBooks =
       activeCategory === "All"
-        ? bookData
-        : bookData.filter((book) => book.category === activeCategory);
+        ? books
+        : books.filter((book) => book.category === activeCategory);
 
     // เรียงคะแนนมากไปน้อย แล้วตัดให้เหลือแค่ 6 เล่ม
     return [...matchedBooks].sort((a, b) => b.rating - a.rating).slice(0, 6);
-  }, [activeCategory]);
+  }, [activeCategory, books]);
 
   return (
     <div className="bg-[#EEE1DB] px-4 pb-10 pt-10 sm:px-8 lg:px-20 lg:pb-14 lg:pt-16">
@@ -38,16 +44,27 @@ export default function CategorySample() {
         </Link>
       </div>
 
-      <CategoryFilter
-        className=""
-        categories={categories}
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-      />
+      {categories.length > 0 && (
+        <CategoryFilter
+          className=""
+          categories={categories}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
+      )}
 
       {/* ปรับ padding ของกรอบตามขนาดหน้าจอ เพื่อให้การ์ดดูบาลานซ์ทุกขนาด */}
       <div className="flex items-center justify-center rounded-[2rem] bg-[#F9F4F1] px-3 py-5 shadow-sm sm:rounded-[2.5rem] sm:px-5 sm:py-7 lg:ml-12 lg:px-6 lg:py-8">
-        <SlideBooks books={filteredBooks} />
+        {isLoading && <p className="py-10 text-center">Loading books...</p>}
+        {!isLoading && error && (
+          <p className="py-10 text-center text-red-700">{error}</p>
+        )}
+        {!isLoading && !error && filteredBooks.length === 0 && (
+          <p className="py-10 text-center">No books found.</p>
+        )}
+        {!isLoading && !error && filteredBooks.length > 0 && (
+          <SlideBooks books={filteredBooks} />
+        )}
       </div>
     </div>
   );

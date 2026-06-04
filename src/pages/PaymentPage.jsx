@@ -1,25 +1,34 @@
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { ArrowLeft, CheckCircle2, Ticket } from "lucide-react"
 import NavBar from "../components/HomeComponents/NavBar"
 import Footer from "../components/HomeComponents/Footer"
 import { useCart } from "../context/CartContext"
-import { coupons } from "../mock-data/couponData"
+import { useAuth } from "../context/AuthContext"
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api"
 const SHIPPING = 50
 
-// ─── handleApplyCoupon (POST /coupons/validate → validateCoupon) ───────────────
-function validateCoupon(code) {
-  return coupons.find((c) => c.code.toUpperCase() === code.trim().toUpperCase()) ?? null
+
+async function apiRequest(path, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers ?? {}),
+    },
+    ...options,
+  })
+
+  const payload = await response.json().catch(() => ({}))
+
+  if (!response.ok || payload.success === false) {
+    throw new Error(payload.message || payload.error || "Request failed")
+  }
+
+  return payload
 }
 
-// ─── Generate order number (matches format ORD-YYYYMMDD-XXXXXX) ────────────────
-function createOrder() {
-  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "")
-  const randomPart = Math.random().toString(16).slice(2, 8).toUpperCase()
-  return `ORD-${dateStr}-${randomPart}`
-}
-
-// ─── Processing view ─────────────────────────────────────────────────────────── 
 function ProcessingView() {
   return (
     <div className="min-h-screen bg-[#f4ece3] flex items-center justify-center">
@@ -29,14 +38,13 @@ function ProcessingView() {
           Processing Your Order...
         </h2>
         <p className="text-[#7D6A62] font-['Cormorant_Garamond'] text-lg">
-          Verifying payment with your bank.
+          Verifying cart, coupon, and payment details.
         </p>
       </div>
     </div>
   )
 }
 
-// ─── Success view ──────────────────────────────────────────────────────────────
 function SuccessView({ orderNumber, totalPaid, onReturnToShop }) {
   return (
     <div className="min-h-screen bg-[#f4ece3] flex items-center justify-center p-4">
@@ -79,86 +87,135 @@ function SuccessView({ orderNumber, totalPaid, onReturnToShop }) {
   )
 }
 
-// ─── Main PaymentPage ──────────────────────────────────────────────────────────
 export default function PaymentPage({ onBackToHome }) {
-  const { cartItems, totalPrice, clearCart } = useCart()
-
+  const navigate = useNavigate()
+  const { clearCart, cartItems } = useCart()
+  const {user} = useAuth();
   const [couponInput, setCouponInput] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [couponError, setCouponError] = useState("")
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
 
-  // "payment" → "processing" → "success"
   const [view, setView] = useState("payment")
   const [orderNumber, setOrderNumber] = useState("")
   const [finalTotal, setFinalTotal] = useState(0)
+  const [paymentError, setPaymentError] = useState("")
 
-  const discount =
-    appliedCoupon?.type === "percent"
-      ? (totalPrice * appliedCoupon.discount) / 100
-      : (appliedCoupon?.discount ?? 0)
+  const totalPrice = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [cartItems],
+  )
+  const discount = appliedCoupon?.discountAmount ?? 0
+  const total = Math.max(totalPrice + SHIPPING - discount, 0)
 
-  const total = totalPrice + SHIPPING - discount
+  function handleReturnToShop() {
+    if (onBackToHome) {
+      onBackToHome()
+      return
+    }
 
-  // ── handleApplyCoupon ──────────────────────────────────────────────────────
-  function handleApplyCoupon() {
-    setAppliedCoupon(null) // always clear previous coupon first
+    navigate("/")
+  }
+
+  async function handleApplyCoupon() {
+    setAppliedCoupon(null)
     setCouponError("")
 
-    if (!couponInput.trim()) return
+    const code = couponInput.trim()
+    if (!code) return
 
-    const found = validateCoupon(couponInput)
-    if (found) {
-      setAppliedCoupon(found)
-    } else {
-      setCouponError("Coupon not found. Please check the code and try again.")
+    if (totalPrice <= 0) {
+      setCouponError("Your cart is empty.")
+      return
+    }
+
+    setIsApplyingCoupon(true)
+
+    try {
+      const payload = await apiRequest("/coupons/validate", {
+        method: "POST",
+        body: JSON.stringify({
+          code,
+          orderAmount: totalPrice,
+        }),
+      })
+
+      setAppliedCoupon({
+        code: code.toUpperCase(),
+        ...payload.data,
+      })
+    } catch (error) {
+      setCouponError(error.message)
+    } finally {
+      setIsApplyingCoupon(false)
     }
   }
 
-  // Clear applied coupon as soon as user edits the input field
   function handleCouponInputChange(e) {
     setCouponInput(e.target.value)
     setAppliedCoupon(null)
     setCouponError("")
   }
 
-  // ── handlePayNow (POST /orders → createOrder) ──────────────────────────────
-  function handlePayNow() {
-    const orderNum = createOrder()
-    setOrderNumber(orderNum)
-    setFinalTotal(total)
-    setView("processing")
-  }
+  async function handlePayNow() {
+    setPaymentError("")
 
-  // Switch to success after 2-second "processing" animation
-  useEffect(() => {
-    if (view !== "processing") return
-    const timer = setTimeout(() => {
+    if (cartItems.length === 0) {
+      setPaymentError("Your cart is empty.")
+      return
+    }
+
+    setView("processing")
+
+    try {
+      const payload = await apiRequest("/orders", {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: user.id || user._id,
+          total_amount: total,
+          status: "paid",
+          order_item: cartItems.map((item) => ({
+            book_id: item.id,
+            book_name: item.name,
+            author: item.author,
+            quantity: item.quantity,
+            price: item.price,
+            img_link: item.img,
+            isDiscount: item.isDiscount,
+            discountPercent: item.discountPercent,
+          })),
+        }),
+      });
+
       clearCart()
+      setOrderNumber(payload.data?._id ?? "Order created")
+      setFinalTotal(total)
       setView("success")
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [view, clearCart])
+    } catch (error) {
+      setPaymentError(error.message)
+      setView("payment")
+    }
+  }
 
   if (view === "processing") return <ProcessingView />
 
-  if (view === "success")
+  if (view === "success") {
     return (
       <SuccessView
         orderNumber={orderNumber}
         totalPaid={finalTotal}
-        onReturnToShop={onBackToHome}
+        onReturnToShop={handleReturnToShop}
       />
     )
+  }
 
-  // ── Payment view ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#f4ece3] flex flex-col">
       <NavBar />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
-        {/* Back to Home */}
         <button
-          onClick={onBackToHome}
+          onClick={handleReturnToShop}
           className="flex items-center gap-1.5 text-[#A66858] hover:underline mb-8 font-['Cormorant_Garamond'] text-base cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -166,8 +223,6 @@ export default function PaymentPage({ onBackToHome }) {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-
-          {/* ── Coupon Card ─────────────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl p-7 shadow-sm">
             <h2 className="text-xl font-bold font-['Playfair_Display'] text-[#2F241F] mb-5 flex items-center gap-2">
               <Ticket className="w-5 h-5 text-[#A66858]" />
@@ -185,15 +240,17 @@ export default function PaymentPage({ onBackToHome }) {
               />
               <button
                 onClick={handleApplyCoupon}
-                className="bg-[#2F241F] hover:bg-[#3A2F2A] text-white font-bold px-6 py-3 rounded-xl transition-colors font-['Playfair_Display'] cursor-pointer whitespace-nowrap"
+                disabled={isApplyingCoupon || cartItems.length === 0}
+                className="bg-[#2F241F] hover:bg-[#3A2F2A] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-6 py-3 rounded-xl transition-colors font-['Playfair_Display'] cursor-pointer whitespace-nowrap"
               >
-                Apply
+                {isApplyingCoupon ? "Applying..." : "Apply"}
               </button>
             </div>
 
             {appliedCoupon && (
               <p className="text-green-600 text-sm mt-3 font-['Cormorant_Garamond'] text-base">
-                ✓ Coupon &quot;{appliedCoupon.code}&quot; applied — {appliedCoupon.description}
+                Coupon &quot;{appliedCoupon.code}&quot; applied. You saved{" "}
+                {discount.toFixed(2)} THB.
               </p>
             )}
             {couponError && (
@@ -203,13 +260,11 @@ export default function PaymentPage({ onBackToHome }) {
             )}
           </div>
 
-          {/* ── Order Summary Card ───────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl p-7 shadow-sm">
             <h2 className="text-xl font-bold font-['Playfair_Display'] text-[#2F241F] mb-5">
               Order Summary
             </h2>
 
-            {/* Cart items */}
             {cartItems.length === 0 ? (
               <p className="text-[#7D6A62] font-['Cormorant_Garamond'] text-base mb-4">
                 Your cart is empty.
@@ -241,7 +296,6 @@ export default function PaymentPage({ onBackToHome }) {
 
             <hr className="border-[#E5D8D0] mb-4" />
 
-            {/* Price breakdown */}
             <div className="space-y-2 mb-4 font-['Cormorant_Garamond'] text-base">
               <div className="flex justify-between text-[#7D6A62]">
                 <span>Subtotal</span>
@@ -266,6 +320,12 @@ export default function PaymentPage({ onBackToHome }) {
               <span>{total.toFixed(2)} THB</span>
             </div>
 
+            {paymentError && (
+              <p className="text-red-500 text-sm mb-4 font-['Cormorant_Garamond'] text-base">
+                {paymentError}
+              </p>
+            )}
+
             <button
               onClick={handlePayNow}
               disabled={cartItems.length === 0}
@@ -274,7 +334,6 @@ export default function PaymentPage({ onBackToHome }) {
               Confirm &amp; Pay
             </button>
           </div>
-
         </div>
       </main>
 

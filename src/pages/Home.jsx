@@ -1,23 +1,16 @@
-import { useState, useRef } from "react";
-
 import NavBar from "../components/HomeComponents/NavBar";
 import Hero from "../components/HomeComponents/Hero";
 import Banner from "../components/HomeComponents/Banner";
 import CategorySample from "../components/HomeComponents/CategorySample";
 import Footer from "../components/HomeComponents/Footer";
 import Cart from "../components/HomeComponents/Cart";
-import PaymentPage from "./PaymentPage";
 import { useAuth } from "../context/AuthContext";
+import { useBooks } from "../context/BookContext";
 import Admin from "@/components/AdminComponents/Admin";
 
 export default function Home() {
   const { isAdmin } = useAuth();
-  const [currentPage, setCurrentPage] = useState("home"); // "home" | "payment" -- เดี๋ยวอาจจะต้องเอาออกต้องใช้ Router (?)
-
-  // อาจจะต้องเอาออกตอนใช้ router (?) แต่ต้องไปแก้ใน `PaymentPage` ด้วย
-  if (currentPage === "payment") {
-    return <PaymentPage onBackToHome={() => setCurrentPage("home")} />;
-  }
+  const { books, isLoading: isLoadingBooks, error: bookError } = useBooks();
 
   return (
     <>
@@ -26,11 +19,15 @@ export default function Home() {
       ) : (
         <>
           <NavBar />
-          <Hero />
+          <Hero books={books} isLoading={isLoadingBooks} error={bookError} />
           <Banner />
-          <CategorySample />
+          <CategorySample
+            books={books}
+            isLoading={isLoadingBooks}
+            error={bookError}
+          />
           <Footer />
-          <Cart onCheckout={() => setCurrentPage("payment")} />
+          <Cart />
         </>
       )}
     </>

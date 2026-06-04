@@ -292,7 +292,9 @@ export function ProductCatalogTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/products", payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -300,7 +302,9 @@ export function ProductCatalogTable() {
       } else {
         const updateId = payload._id || payload.id;
         const response = await apiClient.put(`/products/${updateId}`, payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
         );
@@ -523,11 +527,13 @@ export function UserCatalogTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/users", payload);
+        const itemData = response.data || response;
+
         savedRow = {
-          ...response,
-          id: response._id || response.id,
-          address_province: response.address?.province || "",
-          address_country: response.address?.country || "",
+          ...itemData,
+          id: itemData._id || itemData.id,
+          address_province: itemData.address?.province || "",
+          address_country: itemData.address?.country || "",
         };
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
@@ -536,11 +542,13 @@ export function UserCatalogTable() {
       } else {
         const updateId = payload._id || payload.id;
         const response = await apiClient.put(`/users/${updateId}`, payload);
+        const itemData = response.data || response;
+
         savedRow = {
-          ...response,
-          id: response._id || response.id,
-          address_province: response.address?.province || "",
-          address_country: response.address?.country || "",
+          ...itemData,
+          id: itemData._id || itemData.id,
+          address_province: itemData.address?.province || "",
+          address_country: itemData.address?.country || "",
         };
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
@@ -792,7 +800,9 @@ export function OrderManagementTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/orders", payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -800,7 +810,9 @@ export function OrderManagementTable() {
       } else {
         const updateId = payload._id || payload.id;
         const response = await apiClient.put(`/orders/${updateId}`, payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
         );
@@ -1018,7 +1030,9 @@ export function CouponCodeTable() {
       let savedRow;
       if (isNew) {
         const response = await apiClient.post("/coupons", payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -1026,7 +1040,9 @@ export function CouponCodeTable() {
       } else {
         const updateId = payload._id || payload.id;
         const response = await apiClient.put(`/coupons/${updateId}`, payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
         );
@@ -1200,7 +1216,9 @@ export function FeedbackTable() {
         payload.updatedAt = new Date().toISOString();
 
         const response = await apiClient.post("/feedback", payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) => [
           ...prevRows.filter((r) => r.id !== newRow.id),
           savedRow,
@@ -1210,7 +1228,9 @@ export function FeedbackTable() {
         payload.updatedAt = new Date().toISOString();
 
         const response = await apiClient.put(`/feedback/${updateId}`, payload);
-        savedRow = { ...response, id: response._id || response.id };
+        const itemData = response.data || response;
+        savedRow = { ...itemData, id: itemData._id || itemData.id };
+
         setRows((prevRows) =>
           prevRows.map((row) => (row.id === newRow.id ? savedRow : row)),
         );
