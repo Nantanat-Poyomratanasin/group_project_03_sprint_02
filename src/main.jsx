@@ -5,15 +5,19 @@ import App from "./App.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { BookProvider } from "./context/BookContext.jsx";
+import { FavoriteProvider } from "./context/FavoriteContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
       <BookProvider>
-        <CartProvider>
-          <App />
-        </CartProvider>
+        <FavoriteProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </FavoriteProvider>
       </BookProvider>
     </AuthProvider>
   </StrictMode>,
 );
+
