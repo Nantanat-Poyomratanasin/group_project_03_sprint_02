@@ -69,10 +69,10 @@ export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { user } = useAuth();
-
+  const userId = user?.id || user?._id;
   useEffect(() => {
     async function loadCart() {
-      const userId = user?.id || user?._id;
+      
 
       if (!userId) {
         return;
@@ -86,7 +86,7 @@ export function CartProvider({ children }) {
     }
 
     loadCart();
-  }, [user]);
+  }, [userId]);
 
   const addToCart = async (book) => {
     const userId = user?.id || user?._id;
