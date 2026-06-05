@@ -7,6 +7,8 @@ import {
   updateCart,
 } from "../Api/CartApi";
 
+import { useAuth } from "./AuthContext";
+
 const CART_STORAGE_KEY = "readly-cart-items";
 const FALLBACK_BOOK_OBJECT_ID = "685abc123456789012345679";
 
@@ -102,10 +104,10 @@ function addBookToLocalCart(currentItems, book) {
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(readStoredCart);
   const [isCartOpen, setIsCartOpen] = useState(false);
-
+  const {user} = useAuth();
   useEffect(() => {
     async function loadCart() {
-      const userId = localStorage.getItem("userId");
+      const userId = user.id || user._id;
 
       if (!userId) {
         return;
@@ -126,7 +128,7 @@ export function CartProvider({ children }) {
   }, [cartItems]);
 
   const addToCart = async (book) => {
-    const userId = localStorage.getItem("userId");
+    const userId = user.id || user._id;
 
     if (!userId) {
       console.error("Please login before adding items to cart.");
@@ -148,7 +150,7 @@ export function CartProvider({ children }) {
   };
 
   const updateQuantity = async (bookId, nextQuantity) => {
-    const userId = localStorage.getItem("userId");
+    const userId = user.id || user._id;
 
     if (!userId) {
       console.error("Please login before updating cart.");
@@ -192,7 +194,7 @@ export function CartProvider({ children }) {
   };
 
   const removeFromCart = async (bookId, cartId) => {
-    const userId = localStorage.getItem("userId");
+    const userId = user.id || user._id;
 
     if (!userId) {
       console.error("Please login before removing cart items.");
