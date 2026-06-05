@@ -75,6 +75,7 @@ export function CartProvider({ children }) {
       const userId = user?.id || user?._id;
 
       if (!userId) {
+        setCartItems([]);
         return;
       }
 
