@@ -17,7 +17,7 @@ import { useFavorites } from "../../context/FavoriteContext";
 import LoginFirstPopup from "./LoginFirstPopup";
 
 export default function NavBar() {
-  const { setIsCartOpen, totalItems } = useCart();
+  const { setIsCartOpen, cartItems } = useCart();
   const { books } = useBooks();
   const [searchTerm, setSearchTerm] = useState("");
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -357,9 +357,9 @@ export default function NavBar() {
                 <ShoppingCart size={18} className="md:hidden" />
                 <ShoppingCart size={24} className="hidden md:block" />
 
-                {totalItems > 0 && (
+                {cartItems > 0 && (
                   <span className="absolute -right-2 -top-2 h-5 min-w-5 flex items-center justify-center rounded-full bg-[#A66858] px-1 text-[10px] font-bold text-white md:h-6 md:min-w-6 md:text-xs">
-                    {totalItems}
+                    {cartItems}
                   </span>
                 )}
               </button>
