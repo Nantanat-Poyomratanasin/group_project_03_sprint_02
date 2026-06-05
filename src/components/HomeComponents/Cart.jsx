@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext"; // Adjust the import path as needed
 
 function formatPrice(price) {
   const numberPrice = Number(price ?? 0);
@@ -9,6 +11,10 @@ function formatPrice(price) {
 
 export default function Cart() {
   const navigate = useNavigate();
+
+  // 1. Bring in isAuthenticated from your AuthContext
+  const { isAuthenticated } = useAuth();
+
   const {
     cartItems,
     clearCart,
@@ -19,6 +25,15 @@ export default function Cart() {
     totalPrice,
     updateQuantity,
   } = useCart();
+
+  // 2. Add a useEffect to watch the authentication state
+  useEffect(() => {
+    // If the user is no longer authenticated (logged out), clear the cart
+    if (!isAuthenticated) {
+      clearCart();
+      setIsCartOpen(false); // Closes the cart UI if it was left open
+    }
+  }, [isAuthenticated, clearCart, setIsCartOpen]);
 
   return (
     <>
@@ -53,7 +68,6 @@ export default function Cart() {
               </div>
             </div>
 
-            {/* Changed max-h-[420px] to max-h-[260px] here */}
             <div className="max-h-[260px] space-y-4 overflow-y-auto pr-1">
               {cartItems.length === 0 ? (
                 <div className="rounded-3xl bg-white/70 px-6 py-12 text-center text-[#7D6A62]">
