@@ -9,23 +9,9 @@ import {
 
 import { useAuth } from "./AuthContext";
 
-const CART_STORAGE_KEY = "readly-cart-items";
 const FALLBACK_BOOK_OBJECT_ID = "685abc123456789012345679";
 
 const CartContext = createContext(null);
-
-function readStoredCart() {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const storedCart = window.localStorage.getItem(CART_STORAGE_KEY);
-    return storedCart ? JSON.parse(storedCart) : [];
-  } catch {
-    return [];
-  }
-}
 
 function toNumber(value) {
   if (value == null) return 0;
@@ -79,30 +65,8 @@ function mapCartItemsToBackendCartItems(items) {
   }));
 }
 
-function addBookToLocalCart(currentItems, book) {
-  const existingItem = currentItems.find((item) => item.id === book.id);
-
-  if (existingItem) {
-    return currentItems.map((item) =>
-      item.id === book.id ? { ...item, quantity: item.quantity + 1 } : item,
-    );
-  }
-
-  return [
-    ...currentItems,
-    {
-      id: book.id,
-      name: book.name,
-      author: book.author,
-      price: toNumber(book.price),
-      img: book.img,
-      quantity: 1,
-    },
-  ];
-}
-
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState(readStoredCart);
+  const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { user } = useAuth();
 
@@ -123,10 +87,6 @@ export function CartProvider({ children }) {
 
     loadCart();
   }, [user]);
-
-  useEffect(() => {
-    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
-  }, [cartItems]);
 
   const addToCart = async (book) => {
     const userId = user?.id || user?._id;
