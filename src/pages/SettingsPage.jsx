@@ -278,6 +278,7 @@ export default function SettingsPage() {
                         username: profileDraft.username,
                         email: profileDraft.email,
                         phone: profileDraft.phone,
+                        dateOfBirth: profileDraft.dob,
                       }),
                     });
 
