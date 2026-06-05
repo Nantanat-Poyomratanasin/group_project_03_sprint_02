@@ -107,7 +107,7 @@ export function CartProvider({ children }) {
   const {user} = useAuth();
   useEffect(() => {
     async function loadCart() {
-      const userId = user.id || user._id;
+      const userId = user?.id || user?._id;
 
       if (!userId) {
         return;
@@ -128,7 +128,7 @@ export function CartProvider({ children }) {
   }, [cartItems]);
 
   const addToCart = async (book) => {
-    const userId = user.id || user._id;
+    const userId = user?.id || user?._id;
 
     if (!userId) {
       console.error("Please login before adding items to cart.");
@@ -150,7 +150,7 @@ export function CartProvider({ children }) {
   };
 
   const updateQuantity = async (bookId, nextQuantity) => {
-    const userId = user.id || user._id;
+    const userId = user?.id || user?._id;
 
     if (!userId) {
       console.error("Please login before updating cart.");
@@ -194,7 +194,7 @@ export function CartProvider({ children }) {
   };
 
   const removeFromCart = async (bookId, cartId) => {
-    const userId = user.id || user._id;
+    const userId = user?.id || user?._id;
 
     if (!userId) {
       console.error("Please login before removing cart items.");
