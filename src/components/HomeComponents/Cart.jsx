@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 
 function formatPrice(price) {
-  return `$${price.toFixed(2)}`;
+  const numberPrice = Number(price ?? 0);
+  return `$${numberPrice.toFixed(2)}`;
 }
 
 export default function Cart() {
@@ -76,7 +77,9 @@ export default function Cart() {
                       <h3 className="line-clamp-2 text-base font-medium text-[#3A2F2A]">
                         {item.name}
                       </h3>
-                      <p className="mt-1 text-sm text-[#7D6A62]">{item.author}</p>
+                      <p className="mt-1 text-sm text-[#7D6A62]">
+                        {item.author}
+                      </p>
                       <p className="mt-2 text-lg font-semibold text-[#3A2F2A]">
                         {formatPrice(item.price)}
                       </p>
@@ -85,7 +88,9 @@ export default function Cart() {
                     <div className="flex flex-col items-end gap-3">
                       <div className="flex items-center overflow-hidden rounded-xl border border-[#E9D8CF] bg-white">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity - 1)
+                          }
                           className="px-3 py-2 text-[#7D6A62] transition hover:bg-[#F7E4DA]"
                           aria-label={`Decrease quantity of ${item.name}`}
                         >
@@ -95,7 +100,9 @@ export default function Cart() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity + 1)
+                          }
                           className="px-3 py-2 text-[#7D6A62] transition hover:bg-[#F7E4DA]"
                           aria-label={`Increase quantity of ${item.name}`}
                         >
@@ -104,7 +111,7 @@ export default function Cart() {
                       </div>
 
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.id, item.cartId)}
                         className="rounded-full p-2 text-[#8F7B73] transition hover:bg-[#F7E4DA] hover:text-[#A66858]"
                         aria-label={`Remove ${item.name} from cart`}
                       >
@@ -119,7 +126,9 @@ export default function Cart() {
             <div className="mt-6 border-t border-[#E7D5CC] pt-5">
               <div className="mb-4 flex items-center justify-between text-[#3A2F2A]">
                 <span className="text-2xl font-medium">Total</span>
-                <span className="text-3xl font-bold">{formatPrice(totalPrice)}</span>
+                <span className="text-3xl font-bold">
+                  {formatPrice(totalPrice)}
+                </span>
               </div>
 
               <button
