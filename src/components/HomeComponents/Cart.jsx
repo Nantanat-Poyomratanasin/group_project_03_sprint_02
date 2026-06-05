@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-import { useAuth } from "../lib/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 function formatPrice(price) {
   const numberPrice = Number(price ?? 0);
