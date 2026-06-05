@@ -271,6 +271,7 @@ export function CartProvider({ children }) {
     totalItems,
     totalPrice,
     updateQuantity,
+    setCartItems,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
