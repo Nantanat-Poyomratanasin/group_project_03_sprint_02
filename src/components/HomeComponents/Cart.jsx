@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-import { useAuth } from "../../context/AuthContext"; // Adjust the import path as needed
+import { useAuth } from "../lib/AuthContext"; // Adjust this path to wherever your AuthProvider is located
 
 function formatPrice(price) {
   const numberPrice = Number(price ?? 0);
@@ -12,12 +12,11 @@ function formatPrice(price) {
 export default function Cart() {
   const navigate = useNavigate();
 
-  // 1. Bring in isAuthenticated from your AuthContext
+  // 1. Grab isAuthenticated from your AuthContext
   const { isAuthenticated } = useAuth();
 
   const {
     cartItems,
-    clearCart,
     isCartOpen,
     removeFromCart,
     setIsCartOpen,
@@ -26,14 +25,18 @@ export default function Cart() {
     updateQuantity,
   } = useCart();
 
-  // 2. Add a useEffect to watch the authentication state
+  // 2. Create UI-only "display" variables
+  // If the user is logged out, force these to be empty/zero
+  const displayItems = isAuthenticated ? cartItems : [];
+  const displayTotalItems = isAuthenticated ? totalItems : 0;
+  const displayTotalPrice = isAuthenticated ? totalPrice : 0;
+
+  // 3. Optional but recommended: Close the cart panel if they log out while it's open
   useEffect(() => {
-    // If the user is no longer authenticated (logged out), clear the cart
     if (!isAuthenticated) {
-      clearCart();
-      setIsCartOpen(false); // Closes the cart UI if it was left open
+      setIsCartOpen(false);
     }
-  }, [isAuthenticated, clearCart, setIsCartOpen]);
+  }, [isAuthenticated, setIsCartOpen]);
 
   return (
     <>
@@ -56,7 +59,9 @@ export default function Cart() {
 
               <div className="flex items-center gap-3">
                 <span className="rounded-full bg-[#B77B68] px-4 py-2 text-sm font-semibold text-white">
-                  {totalItems} {totalItems === 1 ? "Item" : "Items"}
+                  {/* Using displayTotalItems */}
+                  {displayTotalItems}{" "}
+                  {displayTotalItems === 1 ? "Item" : "Items"}
                 </span>
                 <button
                   onClick={() => setIsCartOpen(false)}
@@ -69,7 +74,8 @@ export default function Cart() {
             </div>
 
             <div className="max-h-[260px] space-y-4 overflow-y-auto pr-1">
-              {cartItems.length === 0 ? (
+              {/* Using displayItems to determine if empty UI should show */}
+              {displayItems.length === 0 ? (
                 <div className="rounded-3xl bg-white/70 px-6 py-12 text-center text-[#7D6A62]">
                   <p className="text-lg font-medium">Your cart is empty</p>
                   <p className="mt-2 text-sm">
@@ -77,7 +83,8 @@ export default function Cart() {
                   </p>
                 </div>
               ) : (
-                cartItems.map((item) => (
+                /* Mapping over displayItems instead of cartItems */
+                displayItems.map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center gap-4 rounded-[24px] bg-white/70 p-4 shadow-sm"
@@ -142,13 +149,14 @@ export default function Cart() {
               <div className="mb-4 flex items-center justify-between text-[#3A2F2A]">
                 <span className="text-2xl font-medium">Total</span>
                 <span className="text-3xl font-bold">
-                  {formatPrice(totalPrice)}
+                  {/* Using displayTotalPrice */}
+                  {formatPrice(displayTotalPrice)}
                 </span>
               </div>
 
               <button
                 className="w-full rounded-2xl bg-[#B77B68] px-6 py-4 text-lg font-semibold text-white transition hover:bg-[#A66858] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={cartItems.length === 0}
+                disabled={displayItems.length === 0}
                 onClick={() => {
                   setIsCartOpen(false);
                   navigate("/paymentPage");
@@ -166,9 +174,10 @@ export default function Cart() {
           aria-label="Toggle cart"
         >
           <ShoppingCart size={28} />
-          {totalItems > 0 && (
+          {/* Using displayTotalItems for the notification badge */}
+          {displayTotalItems > 0 && (
             <span className="absolute -right-1 -top-1 flex h-7 min-w-7 items-center justify-center rounded-full bg-[#F04646] px-1 text-xs font-bold text-white">
-              {totalItems}
+              {displayTotalItems}
             </span>
           )}
         </button>
