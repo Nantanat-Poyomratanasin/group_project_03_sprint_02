@@ -3,17 +3,18 @@ import {
   CircleUser,
   Heart,
   Search,
-  Package,
+  ScrollText,
   ChevronDown,
   Trash2,
   X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "../../context/CartContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useBooks } from "../../context/BookContext";
 import { useFavorites } from "../../context/FavoriteContext";
+import LoginFirstPopup from "./LoginFirstPopup";
 
 export default function NavBar() {
   const { setIsCartOpen, totalItems } = useCart();
@@ -54,20 +55,44 @@ export default function NavBar() {
   });
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleHeartClick = () => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    setActivePopup((prev) => (prev === "likes" ? null : "likes"));
-  };
-
-  //Order popup handler
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
+  const handleHeartClick = () => {
+    if (location.pathname === "/login") return;
+
+    setIsCartOpen(false);
+
+    if (!isAuthenticated) {
+      setActivePopup("likes");
+      return;
+    }
+
+    setActivePopup((prev) => (prev === "likes" ? null : "likes"));
+  };
+
+  //Cart popup handler
+  const handleCartClick = () => {
+    if (location.pathname === "/login") return;
+
+    setActivePopup(null);
+
+    if (!isAuthenticated) {
+      setActivePopup("cart");
+      return;
+    }
+
+    setIsCartOpen(true);
+  };
+
+  //Order popup handler
   const handleOrderClick = async () => {
+    if (location.pathname === "/login") return;
+
+    setIsCartOpen(false);
+
     if (!isAuthenticated) {
       setActivePopup("orders");
       return;
@@ -96,6 +121,10 @@ export default function NavBar() {
 
   //Profile popup handler
   const handleProfileClick = () => {
+    if (location.pathname === "/login") return;
+
+    setIsCartOpen(false);
+
     if (!isAuthenticated) {
       setActivePopup("profile");
       return;
@@ -213,7 +242,14 @@ export default function NavBar() {
               </button>
 
               {/* โครงสร้าง Favorite Popup */}
-              {activePopup === "likes" && (
+              {activePopup === "likes" && !isAuthenticated && (
+                <LoginFirstPopup
+                  message="Please login to view your favorites."
+                  onClose={() => setActivePopup(null)}
+                />
+              )}
+
+              {activePopup === "likes" && isAuthenticated && (
                 <div
                   className="fixed top-20 left-1/2 -translate-x-1/2 lg:absolute lg:right-0 lg:left-auto lg:top-auto lg:translate-x-0 mt-3 z-[100] w-[90vw] max-w-[420px] sm:w-[360px] md:w-[420px] 
                 rounded-3xl bg-[#FAF6F4] border border-[#EBE3DE] 
@@ -311,59 +347,47 @@ export default function NavBar() {
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="relative text-black hover:text-gray-700 transition-colors"
-            >
-              <ShoppingCart size={18} className="md:hidden" />
-              <ShoppingCart size={24} className="hidden md:block" />
-              {totalItems > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#A66858] px-1 text-[10px] font-bold text-white md:h-6 md:min-w-6 md:text-xs">
-                  {totalItems}
-                </span>
-              )}
-            </button>
 
+            {/*CART*/}
+            <div className="relative navbar-popup-trigger">
+              <button
+                onClick={handleCartClick}
+                className="relative text-black hover:text-gray-700 transition-colors "
+              >
+                <ShoppingCart size={18} className="md:hidden" />
+                <ShoppingCart size={24} className="hidden md:block" />
+
+                {totalItems > 0 && (
+                  <span className="absolute -right-2 -top-2 h-5 min-w-5 flex items-center justify-center rounded-full bg-[#A66858] px-1 text-[10px] font-bold text-white md:h-6 md:min-w-6 md:text-xs">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+              {activePopup === "cart" && !isAuthenticated && (
+                <LoginFirstPopup
+                  message="Please login to view your cart."
+                  onClose={() => setActivePopup(null)}
+                />
+              )}
+            </div>
             {/* ORDER HISTORY*/}
             <div className="relative navbar-popup-trigger">
               <button
                 onClick={handleOrderClick}
                 className="relative text-black hover:text-gray-700 transition-colors flex items-center justify-center"
               >
-                <Package size={18} className="md:hidden" />
-                <Package size={24} className="hidden md:block" />
+                <ScrollText size={18} className="md:hidden" />
+                <ScrollText size={24} className="hidden md:block" />
               </button>
 
               {/* LOGIN FIRST POPUP */}
               {activePopup === "orders" && !isAuthenticated && (
-                <div
-                  className="fixed top-20 left-1/2 -translate-x-1/2 
-                lg:absolute lg:right-0 lg:left-auto lg:top-auto lg:translate-x-0 
-                mt-3 z-[100] w-[90vw] max-w-[360px] sm:w-[280px] md:w-[320px] 
-                rounded-3xl bg-[#FAF6F4] border border-[#EBE3DE] shadow-2xl p-4 sm:p-6 
-                font-['Cormorant_Garamond'] navbar-popup-content"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-bold">Login First</h3>
-                    <button
-                      onClick={() => setActivePopup(null)}
-                      className="text-gray-400 hover:text-gray-700 transition-colors"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-                  <p className="mt-3 text-gray-500 text-sm">
-                    Please login to view your order history.
-                  </p>
-
-                  <button
-                    onClick={() => navigate("/login")}
-                    className="mt-4 w-full rounded-full bg-[#A66858] text-white py-2 text-sm"
-                  >
-                    Go To Login
-                  </button>
-                </div>
+                <LoginFirstPopup
+                  message="Please login to view your order history."
+                  onClose={() => setActivePopup(null)}
+                />
               )}
+
               {/* ORDER HISTORY POPUP after log in*/}
               {activePopup === "orders" && isAuthenticated && (
                 <div className="fixed top-20 left-1/2 -translate-x-1/2 lg:absolute lg:right-0 lg:left-auto lg:top-auto lg:translate-x-0 mt-3 z-[100] w-[90vw] max-w-[420px] sm:w-[360px] md:w-[420px] rounded-3xl bg-[#FAF6F4] border border-[#EBE3DE] shadow-2xl p-4 sm:pl-6 sm:p-5 font-['Cormorant_Garamond'] navbar-popup-content">
@@ -492,28 +516,10 @@ export default function NavBar() {
 
               {/* LOGIN FIRST POPUP */}
               {activePopup === "profile" && !isAuthenticated && (
-                <div className="fixed top-20 left-1/2 -translate-x-1/2 lg:absolute lg:right-0 lg:left-auto lg:top-auto lg:translate-x-0 top-10 z-50 w-80 rounded-3xl bg-[#FAF6F4] shadow-lg p-6 navbar-popup-content">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-bold">Login First</h3>
-                    <button
-                      onClick={() => setActivePopup(null)}
-                      className="text-gray-400 hover:text-gray-700 transition-colors"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-
-                  <p className="mt-3 text-gray-500 text-sm">
-                    Please login to view Profile.
-                  </p>
-
-                  <button
-                    onClick={() => navigate("/login")}
-                    className="mt-4 w-full rounded-full bg-[#A66858] text-white py-2 text-sm"
-                  >
-                    Go To Login
-                  </button>
-                </div>
+                <LoginFirstPopup
+                  message="Please login to access your profile."
+                  onClose={() => setActivePopup(null)}
+                />
               )}
 
               {activePopup === "profile" && isAuthenticated && (
