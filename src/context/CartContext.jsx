@@ -122,7 +122,7 @@ export function CartProvider({ children }) {
     }
 
     loadCart();
-  }, [user]); // Added `user` as a dependency so it reloads if user logs in
+  }, [user]);
 
   useEffect(() => {
     window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
@@ -138,35 +138,28 @@ export function CartProvider({ children }) {
     }
 
     try {
-      // 1. Fetch the user's cart from the backend
       const cartFromBackend = await getCartByUserId(userId);
 
-      // 2. Check if the user already has an existing cart
       if (cartFromBackend && cartFromBackend.length > 0) {
-        // Grab the first active cart (assuming 1 cart per user)
         const existingCart = cartFromBackend[0];
         const cartId = existingCart._id;
 
-        // Get the current items in this specific cart from our local state
         const itemsInSameCart = cartItems.filter(
           (item) => item.cartId === cartId,
         );
 
-        // Normalize the incoming book ID
         const bookId =
           book._id || book.book_id || book.id || FALLBACK_BOOK_OBJECT_ID;
         const existingItem = itemsInSameCart.find((item) => item.id === bookId);
 
         let nextItems;
         if (existingItem) {
-          // Item exists in cart: increment quantity
           nextItems = itemsInSameCart.map((item) =>
             item.id === bookId
               ? { ...item, quantity: item.quantity + 1 }
               : item,
           );
         } else {
-          // Item is new to cart: append it
           nextItems = [
             ...itemsInSameCart,
             {
@@ -180,23 +173,19 @@ export function CartProvider({ children }) {
           ];
         }
 
-        // Calculate the new total amount
         const totalAmount = nextItems.reduce(
           (sum, item) => sum + toNumber(item.price) * item.quantity,
           0,
         );
 
-        // UPDATE the cart on the backend
         await updateCart(cartId, {
           total_amount: totalAmount,
           cart_item: mapCartItemsToBackendCartItems(nextItems),
         });
       } else {
-        // No cart exists: CREATE a new one
         await createCart(buildCartData(book, userId));
       }
 
-      // 3. Re-fetch the newly created/updated cart to keep UI in sync
       const updatedCartFromBackend = await getCartByUserId(userId);
       const mappedItems = mapBackendCartToCartItems(updatedCartFromBackend);
 
@@ -285,8 +274,21 @@ export function CartProvider({ children }) {
     }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  const clearCart = async () => {
+    const userId = user?.id || user?._id;
+
+    if (!userId) {
+      console.error("Please login before clearing the cart.");
+      return;
+    }
+
+    try {
+      const uniqueCartIds = [...new Set(cartItems.map((item) => item.cartId))];
+      await Promise.all(uniqueCartIds.map((cartId) => deleteCart(cartId)));
+      setCartItems([]);
+    } catch (error) {
+      console.error("Failed to clear cart in the database:", error);
+    }
   };
 
   const totalItems = useMemo(
