@@ -111,7 +111,7 @@ export default function Cart() {
                       </div>
 
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.id, item.cartId)}
                         className="rounded-full p-2 text-[#8F7B73] transition hover:bg-[#F7E4DA] hover:text-[#A66858]"
                         aria-label={`Remove ${item.name} from cart`}
                       >

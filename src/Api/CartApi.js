@@ -1,7 +1,8 @@
-﻿const API_URL = "http://localhost:3000/api";
+﻿const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export async function createCart(cartData) {
-  const response = await fetch(`${API_URL}/cart`, {
+  const response = await fetch(`${API_BASE_URL}/cart`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -20,7 +21,7 @@ export async function createCart(cartData) {
 }
 
 export async function updateCart(cartId, cartData) {
-  const response = await fetch(`${API_URL}/cart/${cartId}`, {
+  const response = await fetch(`${API_BASE_URL}/cart/${cartId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -38,8 +39,23 @@ export async function updateCart(cartId, cartData) {
   return result.data;
 }
 
+export async function deleteCart(cartId) {
+  const response = await fetch(`${API_BASE_URL}/cart/${cartId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Delete cart failed");
+  }
+
+  return result.data;
+}
+
 export async function getCartByUserId(userId) {
-  const response = await fetch(`${API_URL}/cart/${userId}`, {
+  const response = await fetch(`${API_BASE_URL}/cart/${userId}`, {
     method: "GET",
     credentials: "include",
   });

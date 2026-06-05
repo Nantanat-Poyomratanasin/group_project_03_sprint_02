@@ -1,5 +1,11 @@
 ﻿import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { createCart, getCartByUserId, updateCart } from "../Api/CartApi";
+
+import {
+  createCart,
+  deleteCart,
+  getCartByUserId,
+  updateCart,
+} from "../Api/CartApi";
 
 const CART_STORAGE_KEY = "readly-cart-items";
 const FALLBACK_BOOK_OBJECT_ID = "685abc123456789012345679";
@@ -49,7 +55,7 @@ function buildCartData(book, userId) {
     status: "pending",
     cart_item: [
       {
-        book_id: book._id || book.book_id || FALLBACK_BOOK_OBJECT_ID,
+        book_id: book._id || book.book_id || book.id || FALLBACK_BOOK_OBJECT_ID,
         book_name: book.name,
         author: book.author,
         quantity: 1,
@@ -185,10 +191,40 @@ export function CartProvider({ children }) {
     }
   };
 
-  const removeFromCart = (bookId) => {
-    setCartItems((currentItems) =>
-      currentItems.filter((item) => item.id !== bookId),
-    );
+  const removeFromCart = async (bookId, cartId) => {
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+      console.error("Please login before removing cart items.");
+      return;
+    }
+
+    const itemsInSameCart = cartItems.filter((item) => item.cartId === cartId);
+
+    const nextItems = itemsInSameCart.filter((item) => item.id !== bookId);
+
+    try {
+      if (nextItems.length === 0) {
+        await deleteCart(cartId);
+      } else {
+        const totalAmount = nextItems.reduce(
+          (sum, item) => sum + toNumber(item.price) * item.quantity,
+          0,
+        );
+
+        await updateCart(cartId, {
+          total_amount: totalAmount,
+          cart_item: mapCartItemsToBackendCartItems(nextItems),
+        });
+      }
+
+      const cartFromBackend = await getCartByUserId(userId);
+      const mappedItems = mapBackendCartToCartItems(cartFromBackend);
+
+      setCartItems(mappedItems);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const clearCart = () => {

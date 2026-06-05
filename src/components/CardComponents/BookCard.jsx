@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
-import { apiFetch } from "../../lib/api";
 
 export default function BookCard({ book, variant = "default" }) {
   // กลับมาใช้รูปจาก data จริงของหนังสือเป็นหลักตามที่ทีมตกลงกัน
@@ -56,27 +55,7 @@ export default function BookCard({ book, variant = "default" }) {
     }
 
     try {
-      await apiFetch("/cart", {
-        method: "POST",
-        body: {
-          user_id: user._id,
-          total_amount: discountPrice,
-          status: "active",
-          cart_item: [
-            {
-              book_id: book._id || book.id,
-              book_name: book.name || book.book_name,
-              author: book.author,
-              quantity: 1,
-              price: discountPrice,
-              img_link: book.img || book.img_link,
-            },
-          ],
-        },
-      });
-
-      // update local CartContext ให้ badge navbar เพิ่มทันที
-      addToCart({
+      await addToCart({
         id: book._id || book.id,
         name: book.name || book.book_name,
         author: book.author,
