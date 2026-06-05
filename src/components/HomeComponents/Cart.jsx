@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
@@ -28,12 +28,7 @@ export default function Cart() {
   const displayTotalItems = isAuthenticated ? totalItems : 0;
   const displayTotalPrice = isAuthenticated ? totalPrice : 0;
 
-  // Automatically close cart panel if the user logs out
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setIsCartOpen(false);
-    }
-  }, [isAuthenticated, setIsCartOpen]);
+
 
   return (
     <>
