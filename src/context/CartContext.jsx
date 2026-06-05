@@ -104,7 +104,8 @@ function addBookToLocalCart(currentItems, book) {
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(readStoredCart);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const {user} = useAuth();
+  const { user } = useAuth();
+
   useEffect(() => {
     async function loadCart() {
       const userId = user?.id || user?._id;
@@ -121,7 +122,7 @@ export function CartProvider({ children }) {
     }
 
     loadCart();
-  }, []);
+  }, [user]); // Added `user` as a dependency so it reloads if user logs in
 
   useEffect(() => {
     window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
@@ -137,15 +138,72 @@ export function CartProvider({ children }) {
     }
 
     try {
-      await createCart(buildCartData(book, userId));
-
+      // 1. Fetch the user's cart from the backend
       const cartFromBackend = await getCartByUserId(userId);
-      const mappedItems = mapBackendCartToCartItems(cartFromBackend);
+
+      // 2. Check if the user already has an existing cart
+      if (cartFromBackend && cartFromBackend.length > 0) {
+        // Grab the first active cart (assuming 1 cart per user)
+        const existingCart = cartFromBackend[0];
+        const cartId = existingCart._id;
+
+        // Get the current items in this specific cart from our local state
+        const itemsInSameCart = cartItems.filter(
+          (item) => item.cartId === cartId,
+        );
+
+        // Normalize the incoming book ID
+        const bookId =
+          book._id || book.book_id || book.id || FALLBACK_BOOK_OBJECT_ID;
+        const existingItem = itemsInSameCart.find((item) => item.id === bookId);
+
+        let nextItems;
+        if (existingItem) {
+          // Item exists in cart: increment quantity
+          nextItems = itemsInSameCart.map((item) =>
+            item.id === bookId
+              ? { ...item, quantity: item.quantity + 1 }
+              : item,
+          );
+        } else {
+          // Item is new to cart: append it
+          nextItems = [
+            ...itemsInSameCart,
+            {
+              id: bookId,
+              name: book.name,
+              author: book.author,
+              price: toNumber(book.price),
+              img: book.img,
+              quantity: 1,
+            },
+          ];
+        }
+
+        // Calculate the new total amount
+        const totalAmount = nextItems.reduce(
+          (sum, item) => sum + toNumber(item.price) * item.quantity,
+          0,
+        );
+
+        // UPDATE the cart on the backend
+        await updateCart(cartId, {
+          total_amount: totalAmount,
+          cart_item: mapCartItemsToBackendCartItems(nextItems),
+        });
+      } else {
+        // No cart exists: CREATE a new one
+        await createCart(buildCartData(book, userId));
+      }
+
+      // 3. Re-fetch the newly created/updated cart to keep UI in sync
+      const updatedCartFromBackend = await getCartByUserId(userId);
+      const mappedItems = mapBackendCartToCartItems(updatedCartFromBackend);
 
       setCartItems(mappedItems);
       setIsCartOpen(true);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to add to cart:", error);
     }
   };
 
@@ -164,7 +222,6 @@ export function CartProvider({ children }) {
     }
 
     const cartId = targetItem.cartId;
-
     const itemsInSameCart = cartItems.filter((item) => item.cartId === cartId);
 
     const nextItems = itemsInSameCart
@@ -202,7 +259,6 @@ export function CartProvider({ children }) {
     }
 
     const itemsInSameCart = cartItems.filter((item) => item.cartId === cartId);
-
     const nextItems = itemsInSameCart.filter((item) => item.id !== bookId);
 
     try {

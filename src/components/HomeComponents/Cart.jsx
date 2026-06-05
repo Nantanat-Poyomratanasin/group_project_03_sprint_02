@@ -53,7 +53,8 @@ export default function Cart() {
               </div>
             </div>
 
-            <div className="max-h-[420px] space-y-4 overflow-y-auto pr-1">
+            {/* Changed max-h-[420px] to max-h-[260px] here */}
+            <div className="max-h-[260px] space-y-4 overflow-y-auto pr-1">
               {cartItems.length === 0 ? (
                 <div className="rounded-3xl bg-white/70 px-6 py-12 text-center text-[#7D6A62]">
                   <p className="text-lg font-medium">Your cart is empty</p>
