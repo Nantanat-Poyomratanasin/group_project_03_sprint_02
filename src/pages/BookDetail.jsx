@@ -7,6 +7,7 @@ import { apiFetch } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoriteContext";
+import Cart from "@/components/HomeComponents/Cart";
 
 function HeartIcon({ filled }) {
   return (
@@ -592,6 +593,7 @@ export default function BookDetail() {
         </section>
       </main>
       <Footer />
+      <Cart />
     </div>
   );
 }

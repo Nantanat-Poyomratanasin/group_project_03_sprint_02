@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Pagination from "@mui/material/Pagination";
 import BookCard from "../components/CardComponents/BookCard";
 import { useBooks } from "../context/BookContext";
+import Cart from "@/components/HomeComponents/Cart";
 
 import NavBar from "../components/HomeComponents/NavBar";
 import Footer from "../components/HomeComponents/Footer";
@@ -149,6 +150,7 @@ const ProductList = () => {
         </div>
       </div>
       <Footer />
+      <Cart />
     </>
   );
 };
