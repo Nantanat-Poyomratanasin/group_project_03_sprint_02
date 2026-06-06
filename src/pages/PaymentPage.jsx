@@ -120,8 +120,7 @@ export default function PaymentPage({ onBackToHome }) {
       return;
     }
 
-    navigate("/");
-    window.location.reload();
+    window.location.href = "/";
   }
 
   async function handleApplyCoupon() {
