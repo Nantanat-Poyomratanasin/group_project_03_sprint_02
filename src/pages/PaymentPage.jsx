@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { ArrowLeft, CheckCircle2, Ticket } from "lucide-react"
-import NavBar from "../components/HomeComponents/NavBar"
-import Footer from "../components/HomeComponents/Footer"
-import { useCart } from "../context/CartContext"
-import { useAuth } from "../context/AuthContext"
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, CheckCircle2, Ticket } from "lucide-react";
+import NavBar from "../components/HomeComponents/NavBar";
+import Footer from "../components/HomeComponents/Footer";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api"
-const SHIPPING = 50
-
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api";
+const SHIPPING = 50;
 
 async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -18,15 +18,15 @@ async function apiRequest(path, options = {}) {
       ...(options.headers ?? {}),
     },
     ...options,
-  })
+  });
 
-  const payload = await response.json().catch(() => ({}))
+  const payload = await response.json().catch(() => ({}));
 
   if (!response.ok || payload.success === false) {
-    throw new Error(payload.message || payload.error || "Request failed")
+    throw new Error(payload.message || payload.error || "Request failed");
   }
 
-  return payload
+  return payload;
 }
 
 function ProcessingView() {
@@ -42,7 +42,7 @@ function ProcessingView() {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
 function SuccessView({ orderNumber, totalPaid, onReturnToShop }) {
@@ -50,13 +50,17 @@ function SuccessView({ orderNumber, totalPaid, onReturnToShop }) {
     <div className="min-h-screen bg-[#f4ece3] flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-10 max-w-md w-full text-center shadow-md">
         <div className="flex justify-center mb-5">
-          <CheckCircle2 className="w-16 h-16 text-green-500" strokeWidth={1.5} />
+          <CheckCircle2
+            className="w-16 h-16 text-green-500"
+            strokeWidth={1.5}
+          />
         </div>
         <h2 className="text-2xl font-bold font-['Playfair_Display'] text-[#2F241F] mb-2">
           Payment Successful!
         </h2>
         <p className="text-[#7D6A62] font-['Cormorant_Garamond'] text-lg mb-7">
-          Your order has been placed. We&apos;ve sent a confirmation email to you.
+          Your order has been placed. We&apos;ve sent a confirmation email to
+          you.
         </p>
 
         <div className="bg-[#f4ece3] rounded-xl p-4 mb-7 text-left space-y-0">
@@ -64,7 +68,9 @@ function SuccessView({ orderNumber, totalPaid, onReturnToShop }) {
             <span className="text-xs font-semibold text-[#7D6A62] tracking-widest">
               ORDER NUMBER
             </span>
-            <span className="text-sm font-bold text-[#2F241F]">{orderNumber}</span>
+            <span className="text-sm font-bold text-[#2F241F]">
+              {orderNumber}
+            </span>
           </div>
           <div className="flex justify-between py-3">
             <span className="text-xs font-semibold text-[#7D6A62] tracking-widest">
@@ -84,52 +90,53 @@ function SuccessView({ orderNumber, totalPaid, onReturnToShop }) {
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 export default function PaymentPage({ onBackToHome }) {
-  const navigate = useNavigate()
-  const { clearCart, cartItems } = useCart()
-  const {user} = useAuth();
-  const [couponInput, setCouponInput] = useState("")
-  const [appliedCoupon, setAppliedCoupon] = useState(null)
-  const [couponError, setCouponError] = useState("")
-  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
+  const navigate = useNavigate();
+  const { clearCart, cartItems } = useCart();
+  const { user } = useAuth();
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState("");
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
-  const [view, setView] = useState("payment")
-  const [orderNumber, setOrderNumber] = useState("")
-  const [finalTotal, setFinalTotal] = useState(0)
-  const [paymentError, setPaymentError] = useState("")
+  const [view, setView] = useState("payment");
+  const [orderNumber, setOrderNumber] = useState("");
+  const [finalTotal, setFinalTotal] = useState(0);
+  const [paymentError, setPaymentError] = useState("");
 
   const totalPrice = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems],
-  )
-  const discount = appliedCoupon?.discountAmount ?? 0
-  const total = Math.max(totalPrice + SHIPPING - discount, 0)
+  );
+  const discount = appliedCoupon?.discountAmount ?? 0;
+  const total = Math.max(totalPrice + SHIPPING - discount, 0);
 
   function handleReturnToShop() {
     if (onBackToHome) {
-      onBackToHome()
-      return
+      onBackToHome();
+      return;
     }
 
-    navigate("/")
+    navigate("/");
+    window.location.reload();
   }
 
   async function handleApplyCoupon() {
-    setAppliedCoupon(null)
-    setCouponError("")
+    setAppliedCoupon(null);
+    setCouponError("");
 
-    const code = couponInput.trim()
-    if (!code) return
+    const code = couponInput.trim();
+    if (!code) return;
 
     if (totalPrice <= 0) {
-      setCouponError("Your cart is empty.")
-      return
+      setCouponError("Your cart is empty.");
+      return;
     }
 
-    setIsApplyingCoupon(true)
+    setIsApplyingCoupon(true);
 
     try {
       const payload = await apiRequest("/coupons/validate", {
@@ -138,34 +145,34 @@ export default function PaymentPage({ onBackToHome }) {
           code,
           orderAmount: totalPrice,
         }),
-      })
+      });
 
       setAppliedCoupon({
         code: code.toUpperCase(),
         ...payload.data,
-      })
+      });
     } catch (error) {
-      setCouponError(error.message)
+      setCouponError(error.message);
     } finally {
-      setIsApplyingCoupon(false)
+      setIsApplyingCoupon(false);
     }
   }
 
   function handleCouponInputChange(e) {
-    setCouponInput(e.target.value)
-    setAppliedCoupon(null)
-    setCouponError("")
+    setCouponInput(e.target.value);
+    setAppliedCoupon(null);
+    setCouponError("");
   }
 
   async function handlePayNow() {
-    setPaymentError("")
+    setPaymentError("");
 
     if (cartItems.length === 0) {
-      setPaymentError("Your cart is empty.")
-      return
+      setPaymentError("Your cart is empty.");
+      return;
     }
 
-    setView("processing")
+    setView("processing");
 
     try {
       const payload = await apiRequest("/orders", {
@@ -187,17 +194,17 @@ export default function PaymentPage({ onBackToHome }) {
         }),
       });
 
-      clearCart()
-      setOrderNumber(payload.data?._id ?? "Order created")
-      setFinalTotal(total)
-      setView("success")
+      clearCart();
+      setOrderNumber(payload.data?._id ?? "Order created");
+      setFinalTotal(total);
+      setView("success");
     } catch (error) {
-      setPaymentError(error.message)
-      setView("payment")
+      setPaymentError(error.message);
+      setView("payment");
     }
   }
 
-  if (view === "processing") return <ProcessingView />
+  if (view === "processing") return <ProcessingView />;
 
   if (view === "success") {
     return (
@@ -206,7 +213,7 @@ export default function PaymentPage({ onBackToHome }) {
         totalPaid={finalTotal}
         onReturnToShop={handleReturnToShop}
       />
-    )
+    );
   }
 
   return (
@@ -339,5 +346,5 @@ export default function PaymentPage({ onBackToHome }) {
 
       <Footer />
     </div>
-  )
+  );
 }
