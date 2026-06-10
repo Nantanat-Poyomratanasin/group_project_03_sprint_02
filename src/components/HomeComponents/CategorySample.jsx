@@ -65,7 +65,11 @@ export default function CategorySample({
         {!isLoading && !error && filteredBooks.length > 0 && (
           // ใช้ variant แยกสำหรับ category โดยเฉพาะ
           // เพื่อไม่ให้ขนาดการ์ดของส่วนนี้ไปกระทบ Hero หรือส่วนอื่น
-          <SlideBooks books={filteredBooks} variant="category" visibleCards={5} />
+          <SlideBooks
+            books={filteredBooks}
+            variant="category"
+            visibleCards={5}
+          />
         )}
       </div>
     </div>

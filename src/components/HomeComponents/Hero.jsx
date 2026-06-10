@@ -2,9 +2,7 @@ import SlideBooks from "../CardComponents/SlideBooks";
 import woodTexture from "../../assets/BgLoginAndRegiter/bglogin.jpg";
 
 export default function Hero({ books = [], isLoading = false, error = "" }) {
-  const trendingBooks = books
-    .filter((book) => book.is_highlighted)
-    .slice(0, 5);
+  const trendingBooks = books.filter((book) => book.is_highlighted).slice(0, 5);
 
   return (
     <section
@@ -21,11 +19,11 @@ export default function Hero({ books = [], isLoading = false, error = "" }) {
           md:max-w-full
           md:items-start
           md:pl-8
-          lg:max-w-[300px]
+          lg:max-w-[280px]
           lg:flex-col
           whitespace-nowrap
           lg:whitespace-normal
-          lg:pl-16 lg:pr-6
+          lg:pl-12
           pt-8
           pb-4
           px-6
@@ -45,7 +43,7 @@ export default function Hero({ books = [], isLoading = false, error = "" }) {
         </h1>
         <p
           className="mt-3
-            max-w-[280px]
+            
             text-m
             lg:text-lg
             font-semibold
@@ -67,7 +65,7 @@ export default function Hero({ books = [], isLoading = false, error = "" }) {
             bg-no-repeat
             py-6
             px-4
-            lg:py-8
+            lg:py-10
           "
         style={{
           backgroundImage: `url(${woodTexture})`,
@@ -75,8 +73,8 @@ export default function Hero({ books = [], isLoading = false, error = "" }) {
       >
         <div
           className="w-full mx-auto rounded-[32px] bg-[#faf4ef] px-5 py-1 
-        md:px-5 md:py-8 md:max-w-[640px]
-        lg:rounded-[36px] lg:px-4 lg:py-2 lg:max-w-[800px]"
+        md:px-4 md:py-2 md:max-w-[650px]
+        lg:rounded-[36px] lg:px-4  lg:max-w-[840px] "
         >
           {isLoading && <p className="py-10 text-center">Loading books...</p>}
           {!isLoading && error && (

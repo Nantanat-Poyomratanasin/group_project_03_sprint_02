@@ -74,11 +74,11 @@ export default function BookCard({ book, variant = "default" }) {
     <div
       className={`flex flex-col border border-[#EFE7E2] bg-white shadow-[0_4px_18px_rgba(44,24,16,0.08)] ${
         isHeroVariant
-          ? "min-h-[380px] w-[260px] rounded-[28px] p-4 sm:w-[280px] sm:rounded-[30px] sm:p-5  lg:w-[240px] lg:rounded-[34px] lg:p-4"
+          ? "min-h-[404px] w-[260px] rounded-[28px] p-4 sm:w-[280px] sm:rounded-[30px] sm:p-5  lg:w-[240px] lg:rounded-[34px] lg:p-4"
           : isGridVariant
             ? "flex h-full min-h-[420px] w-full rounded-[24px] p-4 sm:min-h-[410px] sm:rounded-[26px] lg:min-h-[430px] lg:rounded-[28px] lg:p-5"
             : isCategoryVariant
-              ? "min-h-[404px] w-[220px] rounded-[26px] p-4 sm:min-h-[384px] sm:w-[170px] sm:rounded-[24px] sm:p-3 lg:min-h-[404px] lg:w-[196px] lg:rounded-[28px] lg:p-4"
+              ? "min-h-[404px] w-[240px] rounded-[26px] p-4 sm:min-h-[384px] sm:w-[170px] sm:rounded-[24px] sm:p-3 lg:min-h-[404px] lg:w-[196px] lg:rounded-[28px] lg:p-4"
               : "h-[360px] w-[220px] rounded-[24px] p-3 sm:h-[360px] sm:w-[170px] sm:rounded-[24px] sm:p-3 lg:h-[392px] lg:w-[188px] lg:rounded-[28px] lg:p-4"
       }`}
     >
@@ -88,11 +88,11 @@ export default function BookCard({ book, variant = "default" }) {
         <div
           className={`mx-auto overflow-hidden bg-[#F4ECE7] ${
             isHeroVariant
-              ? "mb-3 h-[240px] rounded-xl sm:h-[280px] sm:rounded-2xl  lg:h-[200px] lg:w-[160px] "
+              ? "mb-3 h-[340px] w-full rounded-xl sm:rounded-2xl"
               : isGridVariant
-                ? "mb-4 aspect-[4/5] w-full rounded-[18px] sm:rounded-[20px]"
+                ? "mb-4 aspect-[2/3] w-full rounded-[18px] sm:rounded-[20px]"
                 : isCategoryVariant
-                  ? "mb-3 h-[250px] w-full rounded-[20px] sm:h-[210px] lg:h-[238px]"
+                  ? "mb-3 h-[320px] w-full rounded-[20px] sm:h-[210px] lg:h-[238px]"
                   : "mb-3 h-[220px] w-full rounded-xl sm:h-[210px] lg:h-[238px]"
           }`}
         >
