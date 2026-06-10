@@ -22,7 +22,7 @@ export default function SlideBooks({
 
   if (screenWidth < 640) {
     // mobile: เห็นแค่ 1 ใบ และลดระยะห่างเพื่อไม่ให้แน่นจอเกินไป
-    cardWidth = isHeroVariant ? 260 : isCategoryVariant ? 220 : 220;
+    cardWidth = isHeroVariant ? 260 : isCategoryVariant ? 240 : 220;
     cardGap = 0;
     cardsPerView = 1;
   } else if (screenWidth < 1024) {
