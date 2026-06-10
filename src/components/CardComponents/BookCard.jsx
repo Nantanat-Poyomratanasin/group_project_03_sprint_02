@@ -88,7 +88,7 @@ export default function BookCard({ book, variant = "default" }) {
         <div
           className={`mx-auto overflow-hidden bg-[#F4ECE7] ${
             isHeroVariant
-              ? "mb-3 h-[340px] w-full rounded-xl sm:rounded-2xl"
+              ? "mb-3 h-[340px] sm:h-[360px] lg:h-[320px] w-full rounded-xl sm:rounded-2xl"
               : isGridVariant
                 ? "mb-4 aspect-[2/3] w-full rounded-[18px] sm:rounded-[20px]"
                 : isCategoryVariant

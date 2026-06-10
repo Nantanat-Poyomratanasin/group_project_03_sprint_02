@@ -374,7 +374,7 @@ export default function BookDetail() {
           <div className="flex flex-col items-center md:flex-row md:items-start gap-5 md:gap-8">
             {/* Cover */}
             <div className="flex flex-col items-center gap-3 sm:gap-4 shrink-0">
-              <div className="w-36 h-52 sm:w-48 sm:h-64 rounded-lg overflow-hidden shadow-md">
+              <div className="w-40 aspect-[2/3] sm:w-52 rounded-lg overflow-hidden shadow-md">
                 {book.img_link ? (
                   <img
                     src={book.img_link}
