@@ -1,8 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
-// base URL ของ backend ที่ใช้กับ auth ทั้ง login / logout / get profile
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 // key นี้ใช้เก็บ email ล่าสุดใน localStorage แบบช่วยจำ ไม่ใช่ token หลัก
 const AUTH_EMAIL_KEY = "readlyUserEmail";
 
